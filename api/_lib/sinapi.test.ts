@@ -158,3 +158,21 @@ describe('SINAPI nacional — download', () => {
     expect(f).toHaveBeenCalledTimes(3);
   });
 });
+
+describe('SINAPI nacional — falhas de rede e nomes', () => {
+  it('fetch failed ⇒ SinapiIndisponivel com o motivo', async () => {
+    const erro = Object.assign(new TypeError('fetch failed'), { cause: { code: 'ECONNRESET', message: 'socket hang up' } });
+    const f = vi.fn(async () => {
+      throw erro;
+    });
+    await expect(baixarPacote(2026, 10, f as unknown as typeof fetch, 2)).rejects.toThrow(/encerrou a conexão/);
+    expect(f).toHaveBeenCalledTimes(2);
+  });
+
+  it('ano/mês pelo nome do arquivo', async () => {
+    const { anoMesDoNome } = await import('../../src/lib/sinapi/pacote');
+    expect(anoMesDoNome('SINAPI-2026-10-formato-xlsx.zip')).toEqual({ ano: 2026, mes: 10 });
+    expect(anoMesDoNome('SINAPI_Referência_2026_09.xlsx')).toEqual({ ano: 2026, mes: 9 });
+    expect(anoMesDoNome('planilha.xlsx')).toBeNull();
+  });
+});

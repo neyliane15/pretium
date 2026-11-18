@@ -170,8 +170,14 @@ pedida nos dois regimes, já publicada.
 `VITE_SUPABASE_URL` já cadastrada é reaproveitada. Depois de salvar, faça *Redeploy*. No Supabase,
 quem já instalou roda `supabase/instalacao/06_atualizacao_busca_sinapi.sql` no SQL Editor.
 
+A função roda na região **São Paulo (`gru1`)** — sites do governo costumam recusar acessos de fora do Brasil.
+
+**Plano B (bloqueio):** *Administração → Tabelas SINAPI → Enviar pacote manualmente*: o admin baixa o
+`SINAPI-AAAA-MM-formato-xlsx.zip` no próprio navegador e envia; a leitura e a importação das UFs
+escolhidas rodam no navegador, com as mesmas regras.
+
 **Limitações:** a Caixa não oferece API; se ela mudar o endereço/formato do pacote ou bloquear o
-acesso automático, a busca avisa e o importador manual (*Importar SINAPI*) continua disponível.
+acesso automático, a busca mostra o motivo e o plano B continua disponível.
 Retificações publicadas com outro nome de arquivo não são detectadas. Cada UF ocupa ~3 MB por mês
 e regime no banco — importar as 27 todo mês enche o plano gratuito do Supabase em poucos meses.
 

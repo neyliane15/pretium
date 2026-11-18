@@ -183,3 +183,9 @@ export function escolherArquivoReferencia(nomes: readonly string[]): string | nu
   const norm = (n: string) => normalizarTexto(n.split('/').pop() ?? n);
   return xlsx.find((n) => norm(n).includes('REFERENCIA')) ?? xlsx.find((n) => /INSUMOS? E COMPOSI/.test(norm(n))) ?? null;
 }
+
+/** Ano/mês a partir do nome do pacote ou da planilha (SINAPI-2026-10-formato-xlsx.zip, SINAPI_Referência_2026_10.xlsx). */
+export function anoMesDoNome(nome: string): { ano: number; mes: number } | null {
+  const m = /(20\d{2})[-_ ](0[1-9]|1[0-2])(?!\d)/.exec(nome);
+  return m ? { ano: Number(m[1]), mes: Number(m[2]) } : null;
+}

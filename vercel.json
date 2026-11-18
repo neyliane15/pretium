@@ -19,5 +19,8 @@
       "path": "/api/sinapi/cron",
       "schedule": "17 13 * * *"
     }
+  ],
+  "regions": [
+    "gru1"
   ]
 }

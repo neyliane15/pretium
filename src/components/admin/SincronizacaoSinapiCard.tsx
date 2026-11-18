@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { CloudDownload, RefreshCw } from 'lucide-react';
+import { CloudDownload, RefreshCw, Upload } from 'lucide-react';
+import { EnviarPacoteSinapiModal } from './EnviarPacoteSinapiModal';
 import { mensagemResposta, useBuscarSinapiCaixa, useSincronizacoesSinapi, type SinapiSincronizacao } from '@/api/core/sinapiCaixa';
 import { BuscarSinapiCaixaModal } from '@/components/referencias/BuscarSinapiCaixa';
 import { Badge, Button, Card, CardHeader, ConfirmDialog, EmptyState, TBody, THead, Table, Td, Th, Tr, useToast } from '@/components/ui';
@@ -19,6 +20,7 @@ export function SincronizacaoSinapiCard() {
   const hist = useSincronizacoesSinapi(15);
   const buscar = useBuscarSinapiCaixa();
   const [umaUf, setUmaUf] = useState(false);
+  const [enviar, setEnviar] = useState(false);
   const [confirmar, setConfirmar] = useState<null | 'em_uso' | 'todas'>(null);
 
   const rodar = async (ufs: 'em_uso' | 'todas') => {
@@ -39,6 +41,7 @@ export function SincronizacaoSinapiCard() {
         description="Baixa o pacote mensal oficial da Caixa (todas as UFs) e importa os dois regimes. Todo dia o sistema verifica se saiu mês novo para as UFs em uso."
         actions={
           <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="ghost" leftIcon={<Upload />} onClick={() => setEnviar(true)}>Enviar pacote manualmente</Button>
             <Button size="sm" leftIcon={<CloudDownload />} onClick={() => setUmaUf(true)}>Buscar uma UF</Button>
             <Button size="sm" leftIcon={<RefreshCw />} loading={buscar.isPending} onClick={() => setConfirmar('em_uso')}>Atualizar UFs em uso</Button>
             <Button size="sm" variant="primary" loading={buscar.isPending} onClick={() => setConfirmar('todas')}>Importar todas as UFs</Button>
@@ -74,6 +77,7 @@ export function SincronizacaoSinapiCard() {
         </Table>
       )}
       <BuscarSinapiCaixaModal open={umaUf} onClose={() => setUmaUf(false)} />
+      <EnviarPacoteSinapiModal open={enviar} onClose={() => setEnviar(false)} />
       <ConfirmDialog
         open={confirmar !== null}
         onClose={() => setConfirmar(null)}
