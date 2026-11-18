@@ -160,6 +160,17 @@ describe('SINAPI nacional — download', () => {
 });
 
 describe('SINAPI nacional — falhas de rede e nomes', () => {
+  it('mais recente: 403 no mês ainda não publicado ⇒ tenta o anterior; 403 em todos ⇒ recusa', async () => {
+    const zip = planilhaNacional();
+    const resp = (st: number, c: Uint8Array | string) => new Response(c, { status: st, headers: { 'content-type': 'application/zip' } });
+    const f = vi.fn(async (url: string) => (url.includes('2026-10') ? resp(200, zip) : resp(403, 'x')));
+    const r = await baixarMaisRecente(new Date(Date.UTC(2026, 10, 18)), f as unknown as typeof fetch);
+    expect(r?.mes).toBe(10);
+    const sempre403 = vi.fn(async () => resp(403, 'x'));
+    await expect(baixarMaisRecente(new Date(Date.UTC(2026, 10, 18)), sempre403 as unknown as typeof fetch)).rejects.toThrow(/HTTP 403/);
+    expect(sempre403).toHaveBeenCalledTimes(4);
+  });
+
   it('fetch failed ⇒ SinapiIndisponivel com o motivo', async () => {
     const erro = Object.assign(new TypeError('fetch failed'), { cause: { code: 'ECONNRESET', message: 'socket hang up' } });
     const f = vi.fn(async () => {

@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CloudDownload } from 'lucide-react';
+import { CloudDownload, ExternalLink, Upload } from 'lucide-react';
 import { mensagemResposta, useBuscarSinapiCaixa, type RespostaBusca } from '@/api/core/sinapiCaixa';
 import { Alert, Button, Field, Modal, Select } from '@/components/ui';
+import { useAuth } from '@/contexts/AuthContext';
 import { useOrganizacao } from '@/contexts/OrganizacaoContext';
+import { EnviarPacoteSinapiModal } from '@/components/admin/EnviarPacoteSinapiModal';
+import { urlPacoteNacional } from '@/lib/sinapi/nacional';
 import { UFS } from '@/lib/labels';
 
 const NOMES_UF: Record<string, string> = {
@@ -24,9 +27,22 @@ function mesesRecentes(): { value: string; label: string }[] {
   return out;
 }
 
+/** Link direto do pacote: mês escolhido ou, para "mais recente", o mês anterior. */
+function linkDownload(mes: string): string {
+  if (mes !== 'recente') {
+    const [a, m] = mes.split('-').map(Number);
+    return urlPacoteNacional(a!, m!);
+  }
+  const d = new Date();
+  const x = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+  return urlPacoteNacional(x.getFullYear(), x.getMonth() + 1);
+}
+
 /** Modal "Buscar tabela oficial": escolhe UF e mês; o servidor baixa da Caixa e importa os dois regimes. */
 export function BuscarSinapiCaixaModal({ open, onClose, ufInicial }: { open: boolean; onClose: () => void; ufInicial?: string }) {
   const { organizacao } = useOrganizacao();
+  const { isAdmin } = useAuth();
+  const [manual, setManual] = useState(false);
   const buscar = useBuscarSinapiCaixa();
   const [uf, setUf] = useState(ufInicial ?? organizacao?.uf_padrao ?? 'RJ');
   const [mes, setMes] = useState('recente');
@@ -96,6 +112,31 @@ export function BuscarSinapiCaixaModal({ open, onClose, ufInicial }: { open: boo
         )}
         {buscar.isError && <Alert variant="danger" title="Não foi possível buscar">{buscar.error.message}</Alert>}
         {msg && <Alert variant={msg.tipo} title={msg.titulo}>{msg.texto}</Alert>}
+        {resposta?.status === 'indisponivel' && (
+          <div className="rounded-lg border border-border bg-surface-2 p-4 text-sm">
+            <p className="font-medium text-fg">Plano B: baixar pelo seu navegador</p>
+            <p className="mt-1 text-fg-muted">
+              A Caixa recusa downloads automáticos, mas libera o arquivo para quem acessa pelo navegador.
+              {isAdmin ? ' Baixe o pacote e envie aqui — o Pretium importa as UFs que você escolher.' : ' Peça ao administrador do sistema para baixar e enviar o pacote.'}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a
+                className="inline-flex h-control-sm items-center gap-1.5 rounded border border-border-strong bg-surface px-3 text-sm font-medium text-fg hover:bg-surface-2"
+                href={linkDownload(mes)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <ExternalLink className="h-3.5 w-3.5" /> Baixar pacote da Caixa
+              </a>
+              {isAdmin && (
+                <Button size="sm" variant="primary" leftIcon={<Upload />} onClick={() => setManual(true)}>
+                  Enviar o arquivo baixado
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+        <EnviarPacoteSinapiModal open={manual} onClose={() => setManual(false)} />
         {!buscar.isPending && !resposta && (
           <p className="text-sm text-fg-muted">
             Os preços vêm direto do arquivo oficial da Caixa (sinapi-relatorios-mensais) e ficam disponíveis para todos os escritórios. Depois de

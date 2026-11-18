@@ -24,13 +24,24 @@ const REGIMES = ['nao_desonerado', 'desonerado'] as const;
 /** Chamada RPC genérica (supabase.rpc com service_role). Lança em erro. */
 export type Rpc = (fn: string, args: Record<string, unknown>) => Promise<unknown>;
 
-export class SinapiIndisponivel extends Error {}
+export class SinapiIndisponivel extends Error {
+  constructor(
+    mensagem: string,
+    /** status HTTP devolvido pela Caixa, quando houver */
+    readonly status?: number,
+  ) {
+    super(mensagem);
+  }
+}
 
-const CABECALHOS_NAVEGADOR: Record<string, string> = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  Accept: 'application/zip,application/octet-stream,application/x-zip-compressed,*/*;q=0.9',
-  'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-  Referer: 'https://www.caixa.gov.br/site/Paginas/downloads.aspx',
+/**
+ * O servidor se identifica honestamente. Se a Caixa recusar o acesso automático (403/429), o sistema
+ * respeita a recusa e orienta o envio manual do pacote — não tenta contornar a proteção do site.
+ */
+const CABECALHOS: Record<string, string> = {
+  'User-Agent': 'Pretium/1.0 (orcamento de obras; importacao mensal SINAPI)',
+  Accept: 'application/zip,application/octet-stream,*/*;q=0.8',
+  'Accept-Language': 'pt-BR,pt;q=0.9',
 };
 
 /** Descreve a causa de uma falha de rede do fetch do Node (undici põe o motivo em `cause`). */
@@ -61,7 +72,7 @@ export async function baixarPacote(ano: number, mes: number, f: typeof fetch = f
   let ultimo: unknown = null;
   for (let t = 0; t < tentativas && !r; t++) {
     try {
-      r = await f(url, { headers: CABECALHOS_NAVEGADOR, redirect: 'follow', signal: AbortSignal.timeout(120_000) });
+      r = await f(url, { headers: CABECALHOS, redirect: 'follow', signal: AbortSignal.timeout(120_000) });
     } catch (e) {
       ultimo = e;
       if (t + 1 < tentativas) await new Promise((ok) => setTimeout(ok, 1500));
@@ -69,7 +80,7 @@ export async function baixarPacote(ano: number, mes: number, f: typeof fetch = f
   }
   if (!r) throw new SinapiIndisponivel(`Não foi possível conectar à Caixa: ${motivoFalhaRede(ultimo)}.`);
   if (r.status === 404) return null;
-  if (!r.ok) throw new SinapiIndisponivel(`A Caixa respondeu HTTP ${r.status}${r.status === 403 || r.status === 429 ? ' (acesso automático bloqueado)' : ''}.`);
+  if (!r.ok) throw new SinapiIndisponivel(`A Caixa respondeu HTTP ${r.status}${r.status === 403 || r.status === 429 ? ' (acesso automático bloqueado)' : ''}.`, r.status);
   const bytes = new Uint8Array(await r.arrayBuffer());
   // ZIP começa com "PK"; páginas de erro/bloqueio vêm como HTML
   if (bytes.length < 1000 || bytes[0] !== 0x50 || bytes[1] !== 0x4b) {
@@ -82,10 +93,21 @@ export async function baixarPacote(ano: number, mes: number, f: typeof fetch = f
 
 /** Mês mais recente publicado (tenta do mês atual para trás). */
 export async function baixarMaisRecente(hoje = new Date(), f: typeof fetch = fetch) {
+  // 403 num mês ainda não publicado pode significar "arquivo inexistente": tenta os meses anteriores
+  let recusa: SinapiIndisponivel | null = null;
   for (const { ano, mes } of mesesCandidatos(hoje, 4)) {
-    const p = await baixarPacote(ano, mes, f);
-    if (p) return { ano, mes, ...p };
+    try {
+      const p = await baixarPacote(ano, mes, f, 1);
+      if (p) return { ano, mes, ...p };
+    } catch (e) {
+      if (e instanceof SinapiIndisponivel && e.status === 403) {
+        recusa = e;
+        continue;
+      }
+      throw e;
+    }
   }
+  if (recusa) throw recusa;
   return null;
 }
 
