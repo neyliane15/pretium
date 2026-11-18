@@ -8,6 +8,7 @@ import { custoComposicao, temParcelaSemPreco } from '@/lib/calc';
 import { formatCoeficiente, formatMoeda, formatNumero } from '@/lib/format';
 import { LABEL_INSUMO_TIPO } from '@/lib/labels';
 import { mensagemErro } from '@/lib/supabase';
+import { SIGLA_INSUMO_TIPO } from '@/lib/labels-orcamento';
 import { rotas } from '@/routes';
 import type { ComposicaoAnaliticaLinha } from '@/types/database';
 import { ErroCarregamento, Rotulo } from './comum';
@@ -127,7 +128,7 @@ export function CorpoAnalitico({
       <Table density="compact" gridLines>
         <THead>
           <Tr>
-            <Th width={80}>Tipo</Th>
+            <Th width={92}>Tipo</Th>
             <Th width={70}>Código</Th>
             <Th>Descrição</Th>
             <Th width={40}>Und</Th>
@@ -142,7 +143,7 @@ export function CorpoAnalitico({
             <Tr key={l.item_id}>
               <Td>
                 <Badge variant={l.tipo_item === 'composicao' ? 'info' : l.insumo_tipo === 'mao_de_obra' ? 'brand' : 'neutral'}>
-                  {l.tipo_item === 'composicao' ? 'COMP.' : l.insumo_tipo ? LABEL_INSUMO_TIPO[l.insumo_tipo].slice(0, 8).toUpperCase() : 'INSUMO'}
+                  {l.tipo_item === 'composicao' ? 'COMP.' : l.insumo_tipo ? SIGLA_INSUMO_TIPO[l.insumo_tipo] : 'INSUMO'}
                 </Badge>
               </Td>
               <Td mono>{l.codigo}</Td>

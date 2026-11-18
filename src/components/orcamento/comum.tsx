@@ -4,9 +4,9 @@ import { RefreshCw } from 'lucide-react';
 import { Alert, Badge, Button, DemoBadge, Tooltip } from '@/components/ui';
 import { mensagemErro } from '@/lib/supabase';
 import { formatMesAno } from '@/lib/format';
-import { BADGE_OBRA_STATUS, BADGE_ORCAMENTO_STATUS, LABEL_OBRA_STATUS, LABEL_ORCAMENTO_STATUS, LABEL_REGIME } from '@/lib/labels';
+import { BADGE_OBRA_STATUS, BADGE_ORCAMENTO_STATUS, LABEL_OBRA_STATUS, LABEL_ORCAMENTO_STATUS } from '@/lib/labels';
 import { cn } from '@/lib/cn';
-import type { ObraStatus, OrcamentoStatus, RegimeDesoneracao } from '@/types/database';
+import type { ObraStatus, OrcamentoStatus } from '@/types/database';
 
 export function ErroCarregamento({ erro, onRetry, titulo = 'Não foi possível carregar os dados' }: { erro: unknown; onRetry?: () => void; titulo?: string }) {
   return (
@@ -20,16 +20,9 @@ export function ErroCarregamento({ erro, onRetry, titulo = 'Não foi possível c
   );
 }
 
-export interface DataBaseResumo {
-  uf: string;
-  ano: number;
-  mes: number;
-  regime: RegimeDesoneracao;
-  is_demo: boolean;
-}
+import type { DataBaseResumo } from './dataBase';
 
-export const rotuloDataBase = (d: DataBaseResumo, curto = false) =>
-  `SINAPI ${d.uf} ${formatMesAno(d.ano, d.mes)}${curto ? '' : ` · ${LABEL_REGIME[d.regime]}`}`;
+export { type DataBaseResumo };
 
 /** "SINAPI RJ 09/2026 · Não desonerado" em mono + selo Exemplo quando demo. */
 export function DataBaseTag({ db, className }: { db: DataBaseResumo | null | undefined; className?: string }) {

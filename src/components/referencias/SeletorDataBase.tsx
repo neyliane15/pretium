@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useDatasBase } from '@/api/orcamento/referencias';
-import { rotuloDataBase } from '@/components/orcamento/comum';
+import {} from '@/components/orcamento/comum';
+import { rotuloDataBase } from '@/components/orcamento/dataBase';
 import { Select } from '@/components/ui';
 import { useOrganizacao } from '@/contexts/OrganizacaoContext';
 

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Copy, GitBranch, RefreshCcw, Save } from 'lucide-react';
 import { useAtualizarOrcamento, useDuplicarOrcamento, useOrcamentos, useTrocarDataBase } from '@/api/orcamento/orcamentos';
 import { useDatasBase, useEncargos } from '@/api/orcamento/referencias';
-import { DataBaseTag, rotuloDataBase, StatusOrcamento } from '@/components/orcamento/comum';
+import { DataBaseTag, StatusOrcamento } from '@/components/orcamento/comum';
+import { rotuloDataBase } from '@/components/orcamento/dataBase';
 import { useOrcamentoContexto } from '@/components/orcamento/contexto';
 import {
   Alert, Button, Card, CardBody, CardFooter, CardHeader, Checkbox, DateInput, Field, Input, Modal, NumberInput, Select, TBody, THead,
@@ -82,7 +83,7 @@ export default function OrcamentoDadosPage() {
           <Field label="Código" className="col-span-2">{(p) => <Input {...p} className="font-mono" readOnly={ro} value={f.codigo} placeholder="ORC-2026-031" onChange={(e) => setF({ ...f, codigo: e.target.value })} />}</Field>
           <Field label="Nome" required className="col-span-4">{(p) => <Input {...p} readOnly={ro} value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} />}</Field>
           <Field label="Data do orçamento" className="col-span-2">{(p) => <DateInput {...p} readOnly={ro} value={f.data_orcamento} onChange={(v) => setF({ ...f, data_orcamento: v ?? o.data_orcamento })} />}</Field>
-          <Field label="Validade da proposta" className="col-span-2">{(p) => <NumberInput {...p} readOnly={ro} decimals={0} min={1} value={f.validade_dias} onChange={(v) => setF({ ...f, validade_dias: v })} suffix="dias" />}</Field>
+          <Field label="Validade da proposta" className="col-span-2">{(p) => <NumberInput {...p} readOnly={ro} decimals={0} min={1} value={f.validade_dias} onChange={(v) => setF({ ...f, validade_dias: v })} suffix="d" />}</Field>
           <Field label="Status" className="col-span-2">{(p) => <Select {...p} disabled={ro} value={f.status} onChange={(e) => setF({ ...f, status: e.target.value as OrcamentoStatus })} options={opcoes(LABEL_ORCAMENTO_STATUS)} />}</Field>
           <Field label="Encargos sociais" className="col-span-6" hint={encSel ? `Horista ${formatPercent(encSel.total_horista)} · Mensalista ${formatPercent(encSel.total_mensalista)} — usado no custo-hora de equipes sem insumo SINAPI` : 'Usado no custo-hora de membros de equipe informados por salário'}>
             {(p) => <Select {...p} disabled={ro} value={f.encargos_sociais_id} onChange={(e) => setF({ ...f, encargos_sociais_id: e.target.value })} placeholder="— nenhuma tabela —" options={(encargos.data ?? []).map((e) => ({ value: e.id, label: `${e.nome}${e.organizacao_id ? '' : ' (referência)'}${e.is_demo ? ' · EXEMPLO' : ''}` }))} />}

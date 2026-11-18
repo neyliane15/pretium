@@ -13,7 +13,8 @@ import { mensagemErro } from '@/lib/supabase';
 import { rotas } from '@/routes';
 import { novoOrcamentoSchema, type NovoOrcamentoForm } from '@/schemas/orcamento';
 import { BDI_ZERO, presetTcu } from './bdiPresets';
-import { rotuloDataBase } from './comum';
+import {} from './comum';
+import { rotuloDataBase } from './dataBase';
 
 /** Criação de orçamento (`fn_orcamento_criar`) com data-base e preset de BDI TCU. */
 export function NovoOrcamentoModal({ open, onClose, obraId }: { open: boolean; onClose: () => void; obraId?: string | null }) {

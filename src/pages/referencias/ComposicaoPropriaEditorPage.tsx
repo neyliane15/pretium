@@ -11,8 +11,8 @@ import {
 import { useOrganizacao } from '@/contexts/OrganizacaoContext';
 import { custoComposicao, temParcelaSemPreco } from '@/lib/calc';
 import { formatMoeda } from '@/lib/format';
-import { LABEL_INSUMO_TIPO } from '@/lib/labels';
 import { mensagemErro } from '@/lib/supabase';
+import { SIGLA_INSUMO_TIPO } from '@/lib/labels-orcamento';
 import { rotas } from '@/routes';
 import type { ComposicaoItemTipo, InsumoTipo, ReferenciaBusca } from '@/types/database';
 
@@ -141,12 +141,12 @@ export default function ComposicaoPropriaEditorPage() {
             ) : (
               <Table density="compact" gridLines inset>
                 <THead>
-                  <Tr><Th width={70}>Tipo</Th><Th width={70}>Código</Th><Th>Descrição</Th><Th width={40}>Und</Th><Th numeric width={120}>Coeficiente</Th><Th numeric width={92}>Preço</Th><Th numeric width={92}>Parcial</Th><Th width={84} /></Tr>
+                  <Tr><Th width={92}>Tipo</Th><Th width={70}>Código</Th><Th>Descrição</Th><Th width={40}>Und</Th><Th numeric width={120}>Coeficiente</Th><Th numeric width={92}>Preço</Th><Th numeric width={92}>Parcial</Th><Th width={84} /></Tr>
                 </THead>
                 <TBody>
                   {comPreco.map((l, i) => (
                     <Tr key={l.chave}>
-                      <Td><Badge variant={l.tipo_item === 'composicao' ? 'info' : l.insumo_tipo === 'mao_de_obra' ? 'brand' : 'neutral'}>{l.tipo_item === 'composicao' ? 'COMP.' : l.insumo_tipo ? LABEL_INSUMO_TIPO[l.insumo_tipo].slice(0, 8).toUpperCase() : 'INSUMO'}</Badge></Td>
+                      <Td><Badge variant={l.tipo_item === 'composicao' ? 'info' : l.insumo_tipo === 'mao_de_obra' ? 'brand' : 'neutral'}>{l.tipo_item === 'composicao' ? 'COMP.' : l.insumo_tipo ? SIGLA_INSUMO_TIPO[l.insumo_tipo] : 'INSUMO'}</Badge></Td>
                       <Td mono>{l.codigo}</Td>
                       <Td truncate title={l.descricao}>{l.descricao}{l.fonte === 'propria' && <Badge variant="brand" className="ml-1.5">PRÓP.</Badge>}</Td>
                       <Td muted className="text-xs">{l.unidade}</Td>

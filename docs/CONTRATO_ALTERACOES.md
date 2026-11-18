@@ -165,3 +165,35 @@ Contratos: `docs/ARQUITETURA.md`, `docs/DESIGN.md`, `src/types/*`, `src/lib/calc
   - Sem `VITE_SUPABASE_URL`/`ANON_KEY` o `App` mostra `ConfiguracaoNecessaria` (não quebra) e o `AuthProvider` não chama o Supabase.
 - Impacto: nenhum breaking change. F2: preferir `<Table inset>` dentro de `Card flush`.
 - Status: aplicado (FRONTEND-1)
+
+## 2026-11-18 — FRONTEND-2 — telas de obras/orçamento/referências/honorários/relatórios e notas de integração
+- O quê:
+  1. Camada de dados em `src/api/orcamento/{util,referencias,orcamentos,analises}.ts` e `src/api/core/obras.ts`
+     (único arquivo de `api/core` do F2). Chaves aditivas usadas sob os prefixos existentes de `qkOrc`
+     (ex.: `['orc', id, 'cotacoes']`, `['orc', id, 'memorias']`, `['orc', id, 'analiticas', …]`,
+     `['ref','composicao-preco',…]`) para que `invalidateQueries(['orc', id])` alcance tudo do orçamento.
+  2. `useClientesOpcoes()` em `api/core/obras.ts` lê só `clientes(id, nome)` ativos para o seletor do
+     formulário de obra (sem duplicar os hooks completos de clientes do F1).
+  3. Escritas sem RPC dedicada no contrato, feitas por tabela (RLS) seguidas de `fn_orcamento_recalcular`:
+     memória de cálculo (substitui as linhas do item e liga `usa_memoria`), cotações (`upsert` em
+     `orcamento_insumo_precos` por `orcamento_id,insumo_id`), BDIs (update/insert), etapas (insert +
+     `fn_orcamento_renumerar`), itens (update de quantidade/custo/BDI/descrição com atualização otimista via
+     `calcularItem`; recálculo consolidado com debounce de 600 ms). Medição: `upsert` em `medicao_itens`
+     (`medicao_id,item_id`) e `delete` quando a quantidade é 0.
+  4. **Composição própria**: salva cabeçalho e **substitui** `composicao_itens` (delete + insert) — não é
+     atômico. Proposta (BACKEND-2/REVISOR): RPC `fn_composicao_propria_salvar(p_id uuid, p_cabecalho jsonb,
+     p_itens jsonb) returns uuid` em transação; o front troca a implementação em
+     `useSalvarComposicaoPropria` sem mudar a tela.
+  5. `fn_orcamento_mover` usado com `p_nova_ordem` 1-based (conforme nota 8 do BACKEND-2).
+  6. Rótulos novos do domínio em `src/lib/labels-orcamento.ts` (badges de medição/honorário, grupos de
+     encargos, cores ABC, siglas de tipo de insumo). `labels.ts` intocado.
+  7. Impressão: CSS próprio em `src/components/relatorios/impressao.css` (importado só pela rota
+     `/imprimir/...`): A4 retrato, `@page paisagem` para o cronograma, numeração “Página X de Y”, cabeçalho
+     com logo da organização (`useArquivoUrl`) + Pretium, carimbo técnico e rodapé com data-base/regime;
+     `styles/index.css` (F1) não foi alterado.
+  8. Exportação: `src/lib/export/{tabela,csv,xlsx,relatorios}.ts` (CSV `;`, vírgula decimal, BOM, CRLF;
+     XLSX com números nativos e formatos `#,##0.00` etc.).
+  9. Lógica pura testada: `src/components/orcamento/eap.ts` (árvore/numeração/totais via `calc.ts`) e
+     `src/components/orcamento/cronograma.ts` (totais por período, distribuição linear).
+- Impacto: BACKEND-2 (proposta do item 4), REVISOR (registrar em ARQUITETURA §12 a pasta de impressão).
+- Status: aplicado (FRONTEND-2); item 4 proposto.
