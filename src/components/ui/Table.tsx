@@ -33,9 +33,9 @@ export const Table = forwardRef<HTMLTableElement, TableProps>(function Table(
         className={cn(
           'w-full border-separate border-spacing-0 text-sm',
           '[&_td]:border-b [&_td]:border-grid [&_tbody_tr:last-child_td]:border-b-0',
-          density === 'compact' && '[&_td]:h-6 [&_td]:py-0.5 [&_th]:h-7',
-          density === 'default' && '[&_td]:h-row [&_td]:py-1 [&_th]:h-8',
-          density === 'comfortable' && '[&_td]:h-9 [&_td]:py-2 [&_th]:h-9',
+          density === 'compact' && '[&_td]:h-8 [&_td]:py-1 [&_th]:h-9',
+          density === 'default' && '[&_td]:h-row [&_td]:py-1.5 [&_th]:h-10',
+          density === 'comfortable' && '[&_td]:h-12 [&_td]:py-2.5 [&_th]:h-11',
           striped && '[&_tbody_tr:nth-child(even)]:bg-surface-2/60',
           stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10',
           gridLines && '[&_td+td]:border-l [&_th+th]:border-l',
@@ -99,7 +99,7 @@ export function Th({ numeric, sort, onSort, width, className, children, style, .
       aria-sort={sort === 'asc' ? 'ascending' : sort === 'desc' ? 'descending' : undefined}
       style={{ width, ...style }}
       className={cn(
-        'whitespace-nowrap border-b border-border-strong bg-surface-2 px-2 text-left align-middle',
+        'whitespace-nowrap border-b border-border-strong bg-surface-2 px-3 text-left align-middle first:pl-4 last:pr-4',
         'font-sans text-2xs font-semibold uppercase tracking-[0.06em] text-fg-muted',
         numeric && 'text-right',
         className,
@@ -132,7 +132,7 @@ export function Td({ numeric, mono, muted, truncate, className, ...rest }: TdPro
   return (
     <td
       className={cn(
-        'px-2 align-middle text-fg',
+        'px-3 align-middle text-fg first:pl-4 last:pr-4',
         numeric && 'num whitespace-nowrap text-right',
         mono && 'whitespace-nowrap font-mono text-xs',
         muted && 'text-fg-muted',

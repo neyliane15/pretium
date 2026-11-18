@@ -31,9 +31,9 @@ export const buttonVariants: Record<ButtonVariant, string> = {
 };
 
 export const buttonSizes: Record<ButtonSize, string> = {
-  sm: 'h-control-sm px-2 text-xs [&_svg]:h-3.5 [&_svg]:w-3.5',
-  md: 'h-control px-3 text-base [&_svg]:h-4 [&_svg]:w-4',
-  lg: 'h-control-lg px-4 text-md [&_svg]:h-4 [&_svg]:w-4',
+  sm: 'h-control-sm px-3 text-sm [&_svg]:h-3.5 [&_svg]:w-3.5',
+  md: 'h-control px-4 text-base [&_svg]:h-4 [&_svg]:w-4',
+  lg: 'h-control-lg px-5 text-md [&_svg]:h-4 [&_svg]:w-4',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

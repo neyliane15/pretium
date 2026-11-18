@@ -137,7 +137,7 @@
   }
 
   html {
-    font-size: 13px; /* base 13px: 1rem = 13px */
+    font-size: 14px; /* base 14px: 1rem = 14px */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -193,9 +193,10 @@
   /* Cantoneiras de prancha técnica ("corner marks") */
   .corner-marks {
     position: relative;
-    --cm-size: 8px;
+    --cm-size: 18px;
     --cm-color: rgb(var(--c-border-strong));
   }
+  /* cantoneiras que acompanham o raio do canto (detalhe de prancha técnica) */
   .corner-marks::before,
   .corner-marks::after {
     content: '';
@@ -203,21 +204,24 @@
     width: var(--cm-size);
     height: var(--cm-size);
     pointer-events: none;
+    z-index: 1;
     border-color: var(--cm-color);
   }
   .corner-marks::before {
     top: -1px;
     left: -1px;
-    border-top: 1px solid;
-    border-left: 1px solid;
+    border-top: 2px solid;
+    border-left: 2px solid;
     border-color: var(--cm-color);
+    border-top-left-radius: inherit;
   }
   .corner-marks::after {
     bottom: -1px;
     right: -1px;
-    border-bottom: 1px solid;
-    border-right: 1px solid;
+    border-bottom: 2px solid;
+    border-right: 2px solid;
     border-color: var(--cm-color);
+    border-bottom-right-radius: inherit;
   }
   .corner-marks-brand {
     --cm-color: rgb(var(--c-brand));

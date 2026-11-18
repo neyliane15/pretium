@@ -11,9 +11,9 @@ export const controlBase =
   'aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/25';
 
 export const controlSizes = {
-  sm: 'h-control-sm px-2 text-xs',
-  md: 'h-control px-2.5 text-base',
-  lg: 'h-control-lg px-3 text-md',
+  sm: 'h-control-sm px-2.5 text-sm',
+  md: 'h-control px-3 text-base',
+  lg: 'h-control-lg px-3.5 text-md',
 } as const;
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix'> {
@@ -35,7 +35,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     <input
       ref={ref}
       aria-invalid={invalid || rest['aria-invalid'] || undefined}
-      className={cn(controlBase, controlSizes[size], numeric && 'num text-right', prefix && 'pl-7', suffix && (typeof suffix === 'string' && suffix.length > 2 ? 'pr-11' : 'pr-8'), className)}
+      className={cn(controlBase, controlSizes[size], numeric && 'num text-right', prefix && 'pl-9', suffix && (typeof suffix === 'string' && suffix.length > 2 ? 'pr-12' : 'pr-9'), className)}
       {...rest}
     />
   );
@@ -43,11 +43,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   return (
     <div className="relative w-full">
       {prefix && (
-        <span className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-xs text-fg-subtle [&_svg]:h-3.5 [&_svg]:w-3.5">{prefix}</span>
+        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-xs text-fg-subtle [&_svg]:h-4 [&_svg]:w-4">{prefix}</span>
       )}
       {input}
       {suffix && (
-        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs text-fg-subtle [&_svg]:h-3.5 [&_svg]:w-3.5">{suffix}</span>
+        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-fg-subtle [&_svg]:h-4 [&_svg]:w-4">{suffix}</span>
       )}
     </div>
   );

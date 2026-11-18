@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Alert, LoadingBlock } from '@/components/ui';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Building2 } from 'lucide-react';
+import { Alert, Button, Card, LoadingBlock } from '@/components/ui';
 import { useAvisoGlobal, useDataBaseMaisRecente } from '@/api/core/configuracoes';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganizacao } from '@/contexts/OrganizacaoContext';
@@ -120,13 +121,48 @@ export function AppShell() {
         <Topbar onMenu={estreita ? () => setMenuAberto(true) : undefined} />
         <main id="conteudo" tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto focus:outline-none">
           <Faixas />
-          <div className="mx-auto w-full max-w-[1600px] px-3 py-4 sm:px-6 sm:py-5">
+          <div className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-8 sm:py-7">
             <Suspense fallback={<LoadingBlock />}>
-              <Outlet />
+              <ConteudoOuEscritorio />
             </Suspense>
           </div>
         </main>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Admin pode entrar sem organização (para administrar o sistema), mas as telas de
+ * trabalho (obras, orçamentos, clientes…) precisam de um escritório: em vez de
+ * falhar ao salvar, mostramos o convite para criar um.
+ */
+function ConteudoOuEscritorio() {
+  const { organizacao } = useOrganizacao();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const livre = pathname.startsWith(rotas.admin) || pathname.startsWith(rotas.perfil);
+  if (organizacao || livre) return <Outlet />;
+  return (
+    <div className="mx-auto mt-10 max-w-xl">
+      <Card className="p-8 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-brand/10 text-brand">
+          <Building2 className="h-7 w-7" aria-hidden />
+        </div>
+        <h1 className="font-display text-2xl font-semibold text-fg">Crie o seu escritório</h1>
+        <p className="mx-auto mt-2 max-w-md text-base text-fg-muted">
+          Obras, orçamentos, clientes e honorários ficam guardados dentro de um escritório. Crie o seu para começar —
+          leva menos de um minuto.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Button variant="primary" size="lg" onClick={() => navigate(rotas.onboardingOrganizacao)}>
+            Criar escritório
+          </Button>
+          <Button size="lg" onClick={() => navigate(rotas.admin)}>
+            Ir para a Administração
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 }
