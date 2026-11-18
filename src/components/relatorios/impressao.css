@@ -1,0 +1,62 @@
+/* Relatórios de impressão A4 do Pretium (FRONTEND-2). Importado somente pela rota /imprimir. */
+
+@page { size: A4 portrait; margin: 14mm 12mm 16mm; }
+@page paisagem { size: A4 landscape; margin: 12mm 12mm 14mm; }
+@page {
+  @bottom-right { content: 'Página ' counter(page) ' de ' counter(pages); font: 7.5pt 'JetBrains Mono', monospace; color: #6b7075; }
+}
+
+.rel-tela { min-height: 100vh; background: rgb(var(--c-sunken)); padding: 56px 0 40px; }
+.rel-folha {
+  width: 210mm; min-height: 297mm; margin: 0 auto; padding: 14mm 12mm 16mm; background: #fff; color: #1c2023;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .08), 0 12px 32px -8px rgb(0 0 0 / .18); font-size: 8.5pt; line-height: 1.35;
+}
+.rel-folha.paisagem { width: 297mm; min-height: 210mm; page: paisagem; }
+/* a folha é sempre "papel": tokens claros fixos, mesmo no tema escuro */
+.rel-folha { --c-fg: 28 32 35; --c-fg-muted: 91 97 102; --c-fg-subtle: 107 112 117; --c-border: 222 220 214; --c-border-strong: 199 196 188; --c-grid: 234 232 227; --c-surface: 255 255 255; --c-surface-2: 250 249 247; --c-sunken: 238 237 233; --c-brand: 242 107 29; --c-primary: 194 72 12; --c-chart-1: 242 107 29; --c-chart-2: 16 46 56; --c-chart-3: 245 184 0; --c-chart-6: 199 196 188; --c-accent: 245 184 0; --c-accent-fg: 28 32 35; }
+
+.rel-cab { display: grid; grid-template-columns: 1fr auto; gap: 6mm; align-items: end; padding-bottom: 3mm; border-bottom: 1.2pt solid #1c2023; position: relative; }
+.rel-cab::after { content: ''; position: absolute; left: 0; bottom: -1.2pt; width: 22mm; height: 1.2pt; background: #f26b1d; }
+.rel-titulo { font-family: 'Space Grotesk', Inter, sans-serif; font-weight: 600; font-size: 14pt; letter-spacing: -.01em; line-height: 1.15; }
+.rel-eyebrow { font: 600 6.5pt 'JetBrains Mono', monospace; letter-spacing: .1em; text-transform: uppercase; color: #6b7075; }
+.rel-meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: .6pt solid #c7c4bc; border-top: 0; margin-bottom: 4mm; }
+.rel-meta > div { padding: 1.6mm 2mm; border-top: .6pt solid #c7c4bc; }
+.rel-meta > div + div { border-left: .6pt solid #eae8e3; }
+.rel-meta > div:nth-child(4n + 1) { border-left: 0; }
+.rel-meta dt { font: 500 6pt 'JetBrains Mono', monospace; letter-spacing: .08em; text-transform: uppercase; color: #6b7075; }
+.rel-meta dd { margin-top: .4mm; font-size: 8pt; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rel-demo { margin: 0 0 3mm; padding: 1.4mm 2.4mm; font: 600 7pt 'JetBrains Mono', monospace; letter-spacing: .06em; text-align: center; color: #1c2023; border: .6pt solid #1c2023;
+  background: repeating-linear-gradient(-45deg, #f5b800 0 6px, #ffd75a 6px 12px); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+.rel-tbl { width: 100%; border-collapse: collapse; font-size: 7.6pt; }
+.rel-tbl th { font: 600 6.2pt 'JetBrains Mono', monospace; letter-spacing: .06em; text-transform: uppercase; color: #5b6166; text-align: left;
+  padding: 1.2mm 1.2mm; border-top: .9pt solid #1c2023; border-bottom: .6pt solid #1c2023; background: #faf9f7; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.rel-tbl td { padding: .8mm 1.2mm; border-bottom: .3pt solid #eae8e3; vertical-align: top; }
+.rel-tbl .n { text-align: right; font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rel-tbl .m { font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+.rel-tbl tr.g1 td { background: #eeede9; font-weight: 600; text-transform: uppercase; border-bottom: .6pt solid #c7c4bc; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.rel-tbl tr.g2 td { background: #faf9f7; font-weight: 600; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.rel-tbl tr.g3 td { font-weight: 500; }
+.rel-tbl tr.sub td { color: #5b6166; font-size: 7pt; border-bottom-style: dotted; }
+.rel-tbl tfoot td { border-top: .6pt solid #1c2023; border-bottom: 0; font-weight: 600; padding-top: 1.2mm; }
+.rel-tbl tfoot tr.destaque td { font-size: 9pt; border-top: 1.2pt solid #1c2023; }
+.rel-tbl thead { display: table-header-group; }
+.rel-tbl tr { break-inside: avoid; }
+
+.rel-carimbo { margin-top: 6mm; display: grid; grid-template-columns: 1.3fr 1fr 1fr 1.2fr; border: .9pt solid #1c2023; break-inside: avoid; position: relative; }
+.rel-carimbo::before { content: ''; position: absolute; top: -.9pt; left: -.9pt; width: 6mm; height: 1.4pt; background: #f26b1d; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.rel-carimbo > div { padding: 1.6mm 2mm; border-left: .6pt solid #c7c4bc; min-height: 13mm; }
+.rel-carimbo > div:first-child { border-left: 0; }
+.rel-carimbo .ass { border-top: .5pt solid #1c2023; margin-top: 7mm; padding-top: .8mm; font-size: 6.5pt; color: #5b6166; text-align: center; }
+.rel-rodape { margin-top: 3mm; display: flex; justify-content: space-between; gap: 4mm; font: 6.5pt 'JetBrains Mono', monospace; color: #6b7075; border-top: .3pt solid #c7c4bc; padding-top: 1.2mm; }
+.rel-secao { font-family: 'Space Grotesk', Inter, sans-serif; font-weight: 600; font-size: 9.5pt; margin: 5mm 0 1.5mm; display: flex; gap: 2mm; align-items: baseline; }
+.rel-secao .m { font: 500 7pt 'JetBrains Mono', monospace; color: #6b7075; }
+.rel-bloco { break-inside: avoid; }
+
+@media print {
+  html, body { background: #fff !important; }
+  .rel-tela { padding: 0; background: #fff; }
+  .rel-folha { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+  .rel-folha.paisagem { width: auto; min-height: 0; }
+  .rel-rodape { position: running(rodape); }
+}

@@ -150,3 +150,18 @@ Contratos: `docs/ARQUITETURA.md`, `docs/DESIGN.md`, `src/types/*`, `src/lib/calc
 - Impacto: FRONTEND-2 (semântica de `p_nova_ordem`, `sem_preco`, recálculo em aprovado), FRONTEND-1
   (importador), TESTES/REVISOR (aplicar ao ARQUITETURA §5.3/§5.4/§7.2).
 - Status: aplicado (BACKEND-2)
+
+## 2026-11-18 — FRONTEND-1 — refinamentos do design system e camada de dados do núcleo
+- O quê:
+  - `Table`: prop aditiva `inset` (dentro de `Card flush`: sem borda/raio próprios e 1ª/última coluna com 16px, alinhadas ao cabeçalho do card). Substitui `containerClassName="rounded-none border-0"`.
+  - `Select`: `<select>` casa com `:read-only` no Chromium e aparecia com fundo `sunken`; agora mantém fundo `surface` (desabilitado continua `sunken`). Sem mudança de API.
+  - `.hazard-stripe`: listra escura usa `--c-accent-fg` (antes `--c-graphite`, que fica claro no tema escuro).
+  - `qkCore`: chaves aditivas `obrasDoCliente`, `meusConvites`, `convite`, `arquivoUrl`, `dataBaseRecente`, `admin.datasBase/configuracoes/membrosOrg`.
+  - Hooks do núcleo em `src/api/core/{auth,perfil,organizacao,clientes,configuracoes,admin,sinapi,arquivos,util}.ts`
+    (F2 pode usar `useDataBaseMaisRecente`, `useConfiguracoesPublicas`, `useArquivoUrl(BUCKETS.logos, org.logo_path)` para o cabeçalho dos relatórios).
+  - Parser SINAPI em `src/lib/sinapi/parser.ts` (puro, testado) + `src/lib/sinapi/planilha.ts` (SheetJS sob demanda). Lotes de `SINAPI_LOTE_MAX` (1000).
+    No analítico, as linhas-cabeçalho de composição (sem TIPO ITEM) são enviadas opcionalmente via `fn_sinapi_importar_composicoes` na mesma importação, antes dos itens.
+  - Rótulos do domínio admin/SINAPI em `src/components/admin/rotulos.ts` (em vez de editar `labels.ts`).
+  - Sem `VITE_SUPABASE_URL`/`ANON_KEY` o `App` mostra `ConfiguracaoNecessaria` (não quebra) e o `AuthProvider` não chama o Supabase.
+- Impacto: nenhum breaking change. F2: preferir `<Table inset>` dentro de `Card flush`.
+- Status: aplicado (FRONTEND-1)

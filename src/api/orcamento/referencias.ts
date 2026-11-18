@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { qkOrc } from './keys';
 import { ok, okVoid, useOrgId } from './util';
 import type {
-  Composicao, ComposicaoItemTipo, DataBase, EncargosSociais, EncargosSociaisItem, Insumo, InsumoTipo,
+  Composicao, ComposicaoAnaliticaLinha, ComposicaoItemTipo, DataBase, EncargosSociais, EncargosSociaisItem, Insumo, InsumoTipo,
   ReferenciaBusca, TablesInsert, TablesUpdate,
 } from '@/types/database';
 
@@ -312,5 +312,28 @@ export function useExcluirEncargos() {
   return useMutation({
     mutationFn: async (id: string) => okVoid(await supabase.from('encargos_sociais').delete().eq('id', id)),
     onSuccess: () => void qc.invalidateQueries({ queryKey: qkOrc.encargos(orgId || null) }),
+  });
+}
+
+/** Analíticas de várias composições (relatório analítico / exportação). Uma chamada por composição. */
+export function useAnaliticasOrcamento(composicaoIds: readonly string[], dataBaseId: string | null | undefined, orcamentoId: string | null | undefined, habilitado = true) {
+  const ids = [...new Set(composicaoIds)].sort();
+  return useQuery({
+    queryKey: ['orc', orcamentoId ?? '', 'analiticas', dataBaseId ?? '', ids.join(',')],
+    enabled: habilitado && Boolean(dataBaseId) && ids.length > 0,
+    queryFn: async () => {
+      const out = new Map<string, ComposicaoAnaliticaLinha[]>();
+      const fila = [...ids];
+      const trabalhar = async () => {
+        while (fila.length) {
+          const id = fila.shift()!;
+          const r = await supabase.rpc('fn_composicao_analitica', { p_composicao_id: id, p_data_base_id: dataBaseId!, p_orcamento_id: orcamentoId ?? null });
+          out.set(id, ok(r) ?? []);
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(6, ids.length) }, trabalhar));
+      return out;
+    },
+    staleTime: 60_000,
   });
 }
