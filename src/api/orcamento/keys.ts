@@ -1,0 +1,28 @@
+/** Chaves react-query de REFERÊNCIAS e ORÇAMENTO. Dono: FRONTEND-2. */
+export const qkOrc = {
+  datasBase: (filtros?: unknown) => ['ref', 'datas-base', filtros ?? null] as const,
+  buscaReferencias: (dataBaseId: string, termo: string, tipo: string | null) => ['ref', 'busca', dataBaseId, termo, tipo] as const,
+  composicao: (id: string) => ['ref', 'composicao', id] as const,
+  composicaoAnalitica: (id: string, dataBaseId: string, orcamentoId?: string | null) => ['ref', 'composicao-analitica', id, dataBaseId, orcamentoId ?? null] as const,
+  composicoesProprias: (orgId: string) => ['ref', 'composicoes-proprias', orgId] as const,
+  insumosProprios: (orgId: string) => ['ref', 'insumos-proprios', orgId] as const,
+  encargos: (orgId: string | null) => ['ref', 'encargos', orgId] as const,
+  encargosDetalhe: (id: string) => ['ref', 'encargos', 'detalhe', id] as const,
+
+  orcamentos: (orgId: string, obraId?: string) => ['orc', 'lista', orgId, obraId ?? null] as const,
+  orcamento: (id: string) => ['orc', id] as const,
+  etapas: (id: string) => ['orc', id, 'etapas'] as const,
+  itens: (id: string) => ['orc', id, 'itens'] as const,
+  bdis: (id: string) => ['orc', id, 'bdis'] as const,
+  memorias: (itemId: string) => ['orc', 'memorias', itemId] as const,
+  resumo: (id: string) => ['orc', id, 'resumo'] as const,
+  curvaAbcServicos: (id: string) => ['orc', id, 'abc-servicos'] as const,
+  curvaAbcInsumos: (id: string) => ['orc', id, 'abc-insumos'] as const,
+  cronograma: (id: string) => ['orc', id, 'cronograma'] as const,
+  medicoes: (id: string) => ['orc', id, 'medicoes'] as const,
+  medicao: (medicaoId: string) => ['orc', 'medicao', medicaoId] as const,
+  maoObra: (id: string) => ['orc', id, 'mao-obra'] as const,
+  honorarios: (orgId: string) => ['hon', 'lista', orgId] as const,
+  honorario: (id: string) => ['hon', id] as const,
+  dashboard: (orgId: string) => ['dash', orgId] as const,
+} as const;

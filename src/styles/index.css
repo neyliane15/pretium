@@ -1,0 +1,242 @@
+/* ==========================================================================
+   Pretium — Design tokens (fonte da verdade: docs/DESIGN.md)
+   Cores em canais RGB ("R G B") para permitir opacidade no Tailwind:
+   bg-primary/10 → rgb(var(--c-primary) / 0.1)
+   ========================================================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+
+    /* Superfícies — "papel de prancha" sobre concreto claro */
+    --c-bg: 244 243 240;          /* #F4F3F0 concreto-50 */
+    --c-surface: 255 255 255;     /* #FFFFFF */
+    --c-surface-2: 250 249 247;   /* #FAF9F7 cabeçalhos de tabela, zebra */
+    --c-sunken: 238 237 233;      /* #EEEDE9 inputs readonly, trilhos */
+    --c-overlay: 20 24 27;        /* #14181B backdrop de modal (usar /50) */
+
+    /* Linhas */
+    --c-border: 222 220 214;      /* #DEDCD6 */
+    --c-border-strong: 199 196 188; /* #C7C4BC */
+    --c-grid: 234 232 227;        /* #EAE8E3 linhas internas de tabela */
+
+    /* Texto */
+    --c-fg: 28 32 35;             /* #1C2023 grafite-900 */
+    --c-fg-muted: 91 97 102;      /* #5B6166 */
+    --c-fg-subtle: 107 112 117;   /* #6B7075 (mín. AA 5.0:1 sobre branco) */
+    --c-fg-inverse: 255 255 255;
+
+    /* Marca */
+    --c-brand: 242 107 29;        /* #F26B1D laranja-obra (acentos, logo, filetes) */
+    --c-primary: 194 72 12;       /* #C2480C botão primário (4.97:1 c/ branco) */
+    --c-primary-hover: 169 62 10; /* #A93E0A */
+    --c-primary-fg: 255 255 255;
+    --c-primary-soft: 253 236 224;/* #FDECE0 fundo de seleção/realce */
+    --c-accent: 245 184 0;        /* #F5B800 amarelo-sinalização */
+    --c-accent-fg: 28 32 35;      /* sempre texto grafite sobre amarelo */
+    --c-accent-soft: 255 246 214; /* #FFF6D6 */
+    --c-petrol: 16 46 56;         /* #102E38 azul-petróleo */
+    --c-petrol-2: 23 64 77;       /* #17404D */
+    --c-graphite: 31 36 40;       /* #1F2428 asfalto */
+
+    /* Semânticas */
+    --c-success: 30 122 69;       /* #1E7A45 */
+    --c-success-soft: 226 243 233;/* #E2F3E9 */
+    --c-warning: 138 90 0;        /* #8A5A00 (texto) */
+    --c-warning-soft: 255 244 204;/* #FFF4CC */
+    --c-danger: 200 49 43;        /* #C8312B */
+    --c-danger-soft: 251 231 229; /* #FBE7E5 */
+    --c-info: 27 106 134;         /* #1B6A86 petróleo claro */
+    --c-info-soft: 225 240 245;   /* #E1F0F5 */
+
+    /* Foco */
+    --c-ring: 242 107 29;         /* laranja-obra */
+
+    /* Sidebar (sempre escura: azul-petróleo) */
+    --c-sidebar: 16 46 56;        /* #102E38 */
+    --c-sidebar-2: 12 36 44;      /* #0C242C */
+    --c-sidebar-fg: 232 230 225;  /* #E8E6E1 */
+    --c-sidebar-muted: 159 180 186; /* #9FB4BA */
+    --c-sidebar-border: 30 72 86; /* #1E4856 */
+
+    /* Gráficos (categóricos, ordem fixa) */
+    --c-chart-1: 242 107 29;   /* laranja */
+    --c-chart-2: 16 46 56;     /* petróleo */
+    --c-chart-3: 245 184 0;    /* amarelo */
+    --c-chart-4: 91 97 102;    /* concreto escuro */
+    --c-chart-5: 27 106 134;   /* petróleo claro */
+    --c-chart-6: 199 196 188;  /* concreto */
+
+    /* Sombras */
+    --shadow-xs: 0 1px 0 rgb(28 32 35 / 0.04);
+    --shadow-sm: 0 1px 2px rgb(28 32 35 / 0.06), 0 0 0 1px rgb(28 32 35 / 0.02);
+    --shadow-md: 0 4px 12px -2px rgb(28 32 35 / 0.08), 0 2px 4px -2px rgb(28 32 35 / 0.06);
+    --shadow-lg: 0 16px 40px -8px rgb(28 32 35 / 0.18), 0 4px 10px -4px rgb(28 32 35 / 0.08);
+  }
+
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+    --c-bg: 18 21 24;             /* #121518 */
+    --c-surface: 24 28 32;        /* #181C20 */
+    --c-surface-2: 30 35 40;      /* #1E2328 */
+    --c-sunken: 14 17 19;         /* #0E1113 */
+    --c-overlay: 0 0 0;
+    --c-border: 44 51 58;         /* #2C333A */
+    --c-border-strong: 59 68 76;  /* #3B444C */
+    --c-grid: 36 42 48;           /* #242A30 */
+    --c-fg: 232 230 225;          /* #E8E6E1 */
+    --c-fg-muted: 163 167 170;    /* #A3A7AA */
+    --c-fg-subtle: 133 139 144;   /* #858B90 */
+    --c-fg-inverse: 20 17 15;
+    --c-brand: 255 122 47;        /* #FF7A2F */
+    --c-primary: 255 122 47;      /* #FF7A2F */
+    --c-primary-hover: 255 145 82;/* #FF9152 */
+    --c-primary-fg: 20 17 15;     /* #14110F (7.2:1) */
+    --c-primary-soft: 58 36 24;   /* #3A2418 */
+    --c-accent: 255 194 32;       /* #FFC220 */
+    --c-accent-fg: 20 17 15;
+    --c-accent-soft: 52 43 16;    /* #342B10 */
+    --c-petrol: 79 184 212;       /* #4FB8D4 (petróleo "aceso" p/ texto) */
+    --c-petrol-2: 23 64 77;
+    --c-graphite: 232 230 225;
+    --c-success: 76 195 138;      /* #4CC38A */
+    --c-success-soft: 20 48 34;
+    --c-warning: 255 176 32;      /* #FFB020 */
+    --c-warning-soft: 51 40 14;
+    --c-danger: 240 112 103;      /* #F07067 */
+    --c-danger-soft: 58 26 24;
+    --c-info: 79 184 212;         /* #4FB8D4 */
+    --c-info-soft: 17 45 54;
+    --c-ring: 255 122 47;
+    --c-sidebar: 13 23 28;        /* #0D171C */
+    --c-sidebar-2: 9 17 21;       /* #091115 */
+    --c-sidebar-fg: 232 230 225;
+    --c-sidebar-muted: 140 160 167; /* #8CA0A7 */
+    --c-sidebar-border: 30 44 51; /* #1E2C33 */
+    --c-chart-1: 255 122 47;
+    --c-chart-2: 79 184 212;
+    --c-chart-3: 255 194 32;
+    --c-chart-4: 163 167 170;
+    --c-chart-5: 76 195 138;
+    --c-chart-6: 92 102 110;
+    --shadow-xs: 0 1px 0 rgb(0 0 0 / 0.2);
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35);
+    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.45);
+    --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.6);
+  }
+
+  html {
+    font-size: 13px; /* base 13px: 1rem = 13px */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-bg font-sans text-fg;
+    font-feature-settings: 'cv11', 'ss01', 'tnum' 0;
+    line-height: 1.45;
+  }
+
+  ::selection {
+    background: rgb(var(--c-brand) / 0.22);
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-ring));
+    outline-offset: 2px;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight text-fg;
+  }
+
+  /* Barras de rolagem discretas */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--c-border-strong)) transparent;
+  }
+}
+
+@layer components {
+  /* Números tabulares para valores monetários e quantidades */
+  .num {
+    @apply font-mono tabular-nums;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+  }
+
+  /* Filete de acento: linha laranja curta no topo de um bloco */
+  .accent-rule {
+    position: relative;
+  }
+  .accent-rule::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 28px;
+    height: 2px;
+    background: rgb(var(--c-brand));
+  }
+
+  /* Cantoneiras de prancha técnica ("corner marks") */
+  .corner-marks {
+    position: relative;
+    --cm-size: 8px;
+    --cm-color: rgb(var(--c-border-strong));
+  }
+  .corner-marks::before,
+  .corner-marks::after {
+    content: '';
+    position: absolute;
+    width: var(--cm-size);
+    height: var(--cm-size);
+    pointer-events: none;
+    border-color: var(--cm-color);
+  }
+  .corner-marks::before {
+    top: -1px;
+    left: -1px;
+    border-top: 1px solid;
+    border-left: 1px solid;
+    border-color: var(--cm-color);
+  }
+  .corner-marks::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 1px solid;
+    border-right: 1px solid;
+    border-color: var(--cm-color);
+  }
+  .corner-marks-brand {
+    --cm-color: rgb(var(--c-brand));
+  }
+
+  /* Malha de prancha (fundo de telas de auth/empty) */
+  .blueprint-grid {
+    background-image:
+      linear-gradient(rgb(var(--c-grid)) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--c-grid)) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Faixa zebrada de sinalização (uso pontual: ambiente de demonstração) */
+  .hazard-stripe {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgb(var(--c-accent)) 0 8px,
+      rgb(var(--c-graphite)) 8px 16px
+    );
+  }
+}
+
+@media print {
+  html { font-size: 10pt; }
+  body { background: #fff !important; color: #000 !important; }
+  .no-print { display: none !important; }
+  .print-break { break-before: page; }
+  @page { size: A4; margin: 14mm 12mm; }
+}

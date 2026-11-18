@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 32" width="264" height="64" role="img" aria-label="Pretium">
+  <title>Pretium</title>
+  <rect x="5" y="4" width="6" height="24" fill="#E8E6E1"/>
+  <path fill="#FF7A2F" fill-rule="evenodd" d="M13 4H21L27 10V14L21 20H13ZM13 9.5V14.5H19.2L21.5 12.2V11.8L19.2 9.5Z"/>
+  <rect x="3" y="26" width="10" height="2" fill="#E8E6E1"/>
+  <rect x="36" y="4" width="1" height="24" fill="#3B444C"/>
+  <g stroke="#E8E6E1">
+  <g fill="none" stroke-width="2.6" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="1.5">
+    <path d="M44 23V9H50L53 12V14L50 17H44"/>
+    <path d="M58 23V9H64L67 12V14L64 17H58M63 17L67 23"/>
+    <path d="M80 9H72V23H80M72 16H78.5"/>
+    <path d="M85 9H94M89.5 9V23"/>
+    <path d="M99 9V23"/>
+    <path d="M104 9V20L107 23H110L113 20V9"/>
+    <path d="M118 23V9L123 17L128 9V23"/>
+  </g>
+  </g>
+</svg>

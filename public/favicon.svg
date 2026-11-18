@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>Pretium</title>
+  <rect width="32" height="32" rx="6" fill="#102E38"/>
+  <g transform="translate(2.5 2) scale(0.875)">
+    <rect x="5" y="4" width="6" height="24" fill="#F4F3F0"/>
+    <path fill="#F26B1D" fill-rule="evenodd" d="M13 4H21L27 10V14L21 20H13ZM13 9.5V14.5H19.2L21.5 12.2V11.8L19.2 9.5Z"/>
+    <rect x="3" y="26" width="10" height="2" fill="#F4F3F0"/>
+  </g>
+</svg>
