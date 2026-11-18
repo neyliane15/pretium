@@ -18,6 +18,8 @@ export interface NavGroup {
   itens: NavItem[];
   /** grupo visível só para admin */
   admin?: boolean;
+  /** grupo exibido como um item recolhível (submenu) */
+  recolhivel?: { label: string; icon: LucideIcon; prefixo: string };
 }
 
 /** Navegação principal (Sidebar e busca rápida). Dono: FRONTEND-1. */
@@ -51,8 +53,9 @@ export const NAV: NavGroup[] = [
   {
     titulo: 'Administração',
     admin: true,
+    recolhivel: { label: 'Administração', icon: ShieldCheck, prefixo: rotas.admin },
     itens: [
-      { to: rotas.admin, label: 'Painel admin', icon: ShieldCheck, end: true, termos: 'administracao' },
+      { to: rotas.admin, label: 'Visão geral', icon: ShieldCheck, end: true, termos: 'administracao' },
       { to: rotas.adminUsuarios, label: 'Usuários', icon: Users, termos: 'aprovar bloquear' },
       { to: rotas.adminOrganizacoes, label: 'Organizações', icon: Building, termos: 'escritorios empresas bloquear' },
       { to: rotas.adminSinapi, label: 'Tabelas SINAPI', icon: FileSpreadsheet, end: true, termos: 'datas-base' },

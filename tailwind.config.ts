@@ -77,7 +77,7 @@ export default {
       spacing: {
         '4.5': '18px',
         topbar: '48px',
-        sidebar: '232px',
+        sidebar: '248px',
         'sidebar-collapsed': '56px',
       },
       height: { control: '30px', 'control-sm': '24px', 'control-lg': '36px', row: '28px' },
