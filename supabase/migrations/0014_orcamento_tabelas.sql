@@ -55,7 +55,7 @@ create table orcamento_bdis (
   i_total        numeric(9,4) generated always as (pis + cofins + iss + cprb) stored,
   bdi            numeric(9,4) generated always as (
                    round(((((1 + (ac + s + r + g) / 100) * (1 + df / 100) * (1 + l / 100))
-                           / (1 - (pis + cofins + iss + cprb) / 100)) - 1) * 100, 2)
+                           / nullif(1 - (pis + cofins + iss + cprb) / 100, 0)) - 1) * 100, 2)
                  ) stored,
   created_at     timestamptz not null default now(),
   updated_at     timestamptz not null default now(),
@@ -93,8 +93,8 @@ create table orcamento_itens (
   ordem             integer not null default 0,
   codigo            text not null default '',
   referencia_tipo   item_referencia_tipo not null,
-  composicao_id     uuid null references composicoes(id) on delete no action,
-  insumo_id         uuid null references insumos(id) on delete no action,
+  composicao_id     uuid null references composicoes(id) on delete no action deferrable initially deferred,
+  insumo_id         uuid null references insumos(id) on delete no action deferrable initially deferred,
   fonte             text not null default 'SINAPI',
   referencia_codigo text null,
   descricao         text not null,

@@ -89,3 +89,64 @@ Contratos: `docs/ARQUITETURA.md`, `docs/DESIGN.md`, `src/types/*`, `src/lib/calc
 - Impacto: `src/types/db-core.ts` **sem mudança** (tipos já compatíveis). Front: tratar o erro de
   cadastro fechado; `obter_convite` pode retornar `expired`.
 - Status: aplicado (BACKEND-1)
+
+## 2026-11-18 — BACKEND-2 — migrações 0010–0022, seed e testes entregues; desvios e esclarecimentos
+- O quê (entregue): `0010`–`0022` (faixa 0023–0029 livre), `supabase/seed.sql`, testes em
+  `supabase/tests/orcamento/` (`orc_run.mjs`, `orc_helpers.sql`, `orc_*.test.sql`; reutilizam
+  `tests/core/core_stub_supabase.sql` e `tests/core/core_helpers.sql` do B1). Todas as RPCs de §7.2 com as
+  assinaturas exatas. Nenhuma mudança necessária em `src/types/db-orcamento.ts`.
+- Desvios / esclarecimentos (todos compatíveis com os tipos atuais):
+  1. **FKs `on delete restrict` → `on delete no action deferrable initially deferred`** em
+     `composicao_itens.insumo_id/subcomposicao_id` e `orcamento_itens.composicao_id/insumo_id`. Com `restrict`
+     a exclusão de uma organização falhava no meio da cascata (insumo próprio apagado antes do item que o
+     usa). Excluir um insumo/composição referenciado continua proibido (erro 23503 no commit da requisição).
+  2. **`orcamento_bdis.bdi`**: mesma fórmula, com `nullif(1 − I/100, 0)` no divisor para o check
+     `pis+cofins+iss+cprb < 100` responder (23514) em vez de "division by zero". Resultados idênticos.
+  3. **RLS `datas_base` (select)**: além de `publicada` (e admin), o usuário vê a data-base usada por algum
+     orçamento da sua organização (ex.: data-base arquivada depois). `insumo_precos`/`composicao_precos`:
+     leitura para qualquer usuário ativo (sem filtrar status da data-base).
+  4. **Bloqueio por status** (aprovado/arquivado ⇒ etapas, itens, BDIs, cotações e memórias somente
+     leitura, exceto admin): não se aplica a contexto sem `auth.uid()` (migração/seed/service_role).
+     `fn_orcamento_recalcular` em orçamento aprovado/arquivado **devolve a linha sem alterar** (sem erro);
+     `fn_orcamento_trocar_data_base` nesses status ⇒ erro P0001. Exclusão do próprio orçamento continua livre.
+     Medições `fechada/aprovada` ⇒ `medicao_itens` somente leitura (exceto admin).
+  5. **`sem_preco`**: composição marca `sem_preco` se o custo é nulo **ou** algum componente (recursivo) não
+     tem preço (o custo parcial fica no item); custo oficial ⇒ `false`; itens `livre`/`custo_manual` ⇒
+     `sem_preco = (custo_unitario = 0)`.
+  6. **Trigger de itens**: além de §8.3, aplica `bdi_percentual` do BDI (`bdi_id` ou o padrão) no INSERT e
+     quando `bdi_id` muda; valida etapa/BDI do mesmo orçamento e referência SINAPI ou da mesma org.
+     `fn_herda_organizacao` também impede mover um registro para outra organização via UPDATE.
+  7. **`fn_orcamento_criar`**: `versao = 1`; preenche `encargos_sociais_id` com a tabela global mais recente
+     da mesma UF/regime da data-base (se houver). Chaves ausentes em `p_bdi_padrao` ⇒ 0 (PIS 0,65 / COFINS 3).
+  8. **`fn_orcamento_adicionar_item`**: `p_custo_unitario` informado para composição/insumo ⇒
+     `custo_manual = true`; item livre exige `p_descricao`, unidade padrão `UN`, `fonte = 'PRÓPRIA'`
+     (próprias também `'PRÓPRIA'`; SINAPI `'SINAPI'`). Renumera e atualiza totais de etapas/orçamento
+     (sem recalcular custos). `fn_orcamento_mover`: `p_nova_ordem` = **posição 1-based** entre os irmãos
+     de destino (≤1 ⇒ primeiro, >n ⇒ último); renumera e totaliza.
+  9. **`fn_orcamento_duplicar`**: nova versão mantém o nome (sem `p_nome`); cópia sem nova versão recebe
+     " (cópia)" e mantém `versao`; status `rascunho`, `data_orcamento = hoje`.
+  10. **Explosão (§8.4)** para ABC de insumos e horas de MO: itens com `custo_manual` entram como
+      pseudo-insumo com o custo do item (como os livres); itens com quantidade 0 são ignorados; composição
+      com custo oficial também é explodida pelo analítico quando ele existe.
+  11. **`fn_buscar_referencias`**: SINAPI "com preço" = insumo com `insumo_precos` / composição com
+      `composicao_precos` na data-base; composições próprias retornam o custo calculado; termo vazio lista
+      por código; termo numérico também casa descrição; `p_limite` limitado a 200; só `ativo = true`.
+  12. **`fn_dashboard_resumo`**: `valor_orcado_total` exclui arquivados; `medido_total` = Σ medições;
+      `data_base_mais_recente` = publicada da `uf_padrao` da org, preferindo oficial a demo.
+  13. **Importação**: normaliza de novo no banco (código sem zeros à esquerda/".0", unidade maiúscula,
+      números pt-BR em texto aceitos). Se o upsert do lote falhar, reprocessa linha a linha (erro de uma
+      linha nunca aborta o lote). Insumo/composição oficial importada com o mesmo código de um registro do
+      seed passa a `is_demo = false` (catálogo é único). `tipo` do insumo só é sobrescrito quando informado.
+      `fn_sinapi_finalizar_importacao`: status `erro` se nenhuma linha ok e houve erros; só publica se
+      `concluida`. `fn_sinapi_iniciar_importacao` acumula `datas_base.fonte_arquivo`.
+  14. Utilitários públicos (imutáveis, sem dados): `f_unaccent`, `fn_codigo_ordem`, `fn_numero_br`,
+      `fn_sinapi_normalizar_codigo`, `fn_honorario_valor_disciplina`, `fn_honorario_total`,
+      `fn_cronograma_inicio_periodo`. Internos sem `execute` para clientes: `fn_custos_composicoes`,
+      `fn_preco_insumo_interno`, `fn_orcamento_totalizar`, `fn_orcamento_explosao`, `fn_orc_assert_*`,
+      `fn_sinapi_*` auxiliares.
+  15. **Seed**: códigos/descrições no padrão SINAPI, coeficientes aproximados, preços fictícios; o custo
+      "publicado" demo de cada composição = custo calculado pela própria estrutura; duas tabelas de encargos
+      demo (não desonerado e desonerado). Conferir códigos antes de qualquer uso real.
+- Impacto: FRONTEND-2 (semântica de `p_nova_ordem`, `sem_preco`, recálculo em aprovado), FRONTEND-1
+  (importador), TESTES/REVISOR (aplicar ao ARQUITETURA §5.3/§5.4/§7.2).
+- Status: aplicado (BACKEND-2)

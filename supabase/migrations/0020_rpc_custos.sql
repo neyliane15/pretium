@@ -50,6 +50,7 @@ $$;
 create or replace function fn_custos_composicoes(p_ids uuid[], p_data_base_id uuid, p_orcamento_id uuid default null)
 returns table (composicao_id uuid, custo numeric, sem_preco boolean, cotado boolean, oficial boolean)
 language plpgsql stable security definer set search_path = public as $$
+#variable_conflict use_column
 declare
   v_tem_cot  boolean;
   v_map      jsonb := '{}'::jsonb;
@@ -206,6 +207,7 @@ returns table (item_id uuid, tipo_item composicao_item_tipo, referencia_id uuid,
                descricao text, unidade text, insumo_tipo insumo_tipo, coeficiente numeric, preco_unitario numeric,
                custo_parcial numeric, sem_preco boolean)
 language plpgsql stable security definer set search_path = public as $$
+#variable_conflict use_column
 declare
   v_org uuid;
   v_achou boolean;
@@ -261,6 +263,7 @@ create or replace function fn_buscar_referencias(
 ) returns table (tipo text, id uuid, fonte fonte_referencia, codigo text, descricao text, unidade text,
                  insumo_tipo insumo_tipo, preco numeric, is_demo boolean, rank real)
 language plpgsql stable security definer set search_path = public as $$
+#variable_conflict use_column
 declare
   v_termo  text := btrim(coalesce(p_termo, ''));
   v_num    boolean;
