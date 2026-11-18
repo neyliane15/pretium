@@ -20,3 +20,14 @@ export { Stat, type StatProps } from './Stat';
 export { TBody, TFoot, THead, Table, TableMessage, Td, Th, Tr, type SortDir, type TableProps, type TdProps, type ThProps, type TrProps } from './Table';
 export { TabLinks, Tabs, type TabItem, type TabLinkItem, type TabsProps } from './Tabs';
 export { ToastProvider, useToast, type ToastInput, type ToastTipo } from './Toast';
+// — FRONTEND-1, prioridade 1 (assinaturas em docs/DIVISAO_TRABALHO.md §4) —
+export { Alert, type AlertProps, type AlertVariant } from './Alert';
+export { Avatar, Kbd, iniciais, type AvatarProps } from './Avatar';
+export { Combobox, type ComboboxProps } from './Combobox';
+export { DateInput, type DateInputProps } from './DateInput';
+export { Drawer, type DrawerProps } from './Drawer';
+export { DropdownMenu, type DropdownMenuEntry, type DropdownMenuItem, type DropdownMenuProps } from './DropdownMenu';
+export { FileDrop, type FileDropProps } from './FileDrop';
+export { Pagination, paginas, type PaginationProps } from './Pagination';
+export { Progress, type ProgressProps } from './Progress';
+export { Tooltip, type TooltipProps } from './Tooltip';

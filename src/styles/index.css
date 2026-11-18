@@ -55,6 +55,11 @@
     /* Foco */
     --c-ring: 242 107 29;         /* laranja-obra */
 
+    /* Tooltip (grafite em ambos os temas) */
+    --c-tooltip: 28 32 35;        /* #1C2023 */
+    --c-tooltip-fg: 240 238 234;  /* #F0EEEA */
+    --c-tooltip-border: 28 32 35;
+
     /* Sidebar (sempre escura: azul-petróleo) */
     --c-sidebar: 16 46 56;        /* #102E38 */
     --c-sidebar-2: 12 36 44;      /* #0C242C */
@@ -111,6 +116,9 @@
     --c-info: 79 184 212;         /* #4FB8D4 */
     --c-info-soft: 17 45 54;
     --c-ring: 255 122 47;
+    --c-tooltip: 46 53 60;        /* #2E353C */
+    --c-tooltip-fg: 240 238 234;
+    --c-tooltip-border: 70 80 89;
     --c-sidebar: 13 23 28;        /* #0D171C */
     --c-sidebar-2: 9 17 21;       /* #091115 */
     --c-sidebar-fg: 232 230 225;

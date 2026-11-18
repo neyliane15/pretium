@@ -27,6 +27,7 @@ export default {
         danger: { DEFAULT: v('danger'), soft: v('danger-soft') },
         info: { DEFAULT: v('info'), soft: v('info-soft') },
         ring: v('ring'),
+        tooltip: { DEFAULT: v('tooltip'), fg: v('tooltip-fg'), border: v('tooltip-border') },
         sidebar: {
           DEFAULT: v('sidebar'),
           2: v('sidebar-2'),
@@ -88,11 +89,15 @@ export default {
         'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
         'scale-in': { from: { opacity: '0', transform: 'scale(.98) translateY(4px)' }, to: { opacity: '1', transform: 'none' } },
         'slide-in': { from: { opacity: '0', transform: 'translateY(8px)' }, to: { opacity: '1', transform: 'none' } },
+        'drawer-in': { from: { transform: 'translateX(24px)', opacity: '0' }, to: { transform: 'none', opacity: '1' } },
+        progress: { from: { backgroundPosition: '0 0' }, to: { backgroundPosition: '16px 0' } },
       },
       animation: {
         'fade-in': 'fade-in 120ms ease-out',
         'scale-in': 'scale-in 140ms cubic-bezier(.2,.8,.2,1)',
         'slide-in': 'slide-in 160ms cubic-bezier(.2,.8,.2,1)',
+        'drawer-in': 'drawer-in 180ms cubic-bezier(.2,.8,.2,1)',
+        progress: 'progress 600ms linear infinite',
       },
     },
   },
