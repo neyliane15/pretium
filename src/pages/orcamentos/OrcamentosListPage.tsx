@@ -115,7 +115,7 @@ export default function OrcamentosListPage() {
               {pag.map((o) => (
                 <Tr key={o.id} interactive onClick={() => navigate(rotas.orcamento(o.id))}>
                   <Td mono muted>{o.codigo ?? '—'}</Td>
-                  <Td className="font-medium">
+                  <Td className="min-w-[200px] font-medium">
                     <span className="inline-flex items-center gap-1.5">
                       {o.nome}
                       {o.itens_sem_preco > 0 && (

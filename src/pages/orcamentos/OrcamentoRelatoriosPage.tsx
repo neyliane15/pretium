@@ -7,7 +7,7 @@ import { useOrcamentoContexto } from '@/components/orcamento/contexto';
 import { montarEap } from '@/components/orcamento/eap';
 import { Button, Card, CardHeader, Select, useToast } from '@/components/ui';
 import { linhasParaExport, useMetaOrcamento } from '@/hooks/orcamento/useMetaOrcamento';
-import { ok } from '@/api/orcamento/util';
+import { buscarTodas, ok } from '@/api/orcamento/util';
 import { baixarCsv } from '@/lib/export/csv';
 import {
   montarGradeCronograma, tabelaAbcInsumos, tabelaAbcServicos, tabelaAnalitico, tabelaCronograma, tabelaMedicao, tabelaSintetico,
@@ -48,13 +48,13 @@ export default function OrcamentoRelatoriosPage() {
       const porItem = new Map((itens.data ?? []).flatMap((i) => (i.composicao_id ? [[i.id, an.get(i.composicao_id) ?? []] as const] : [])));
       return tabelaAnalitico(meta, linhasParaExport(e.linhas), porItem, e);
     },
-    'curva-abc-servicos': async () => tabelaAbcServicos(meta, ok(await supabase.rpc('fn_curva_abc_servicos', { p_orcamento_id: id })) ?? []),
-    'curva-abc-insumos': async () => tabelaAbcInsumos(meta, ok(await supabase.rpc('fn_curva_abc_insumos', { p_orcamento_id: id })) ?? []),
-    cronograma: async () => tabelaCronograma(meta, montarGradeCronograma(ok(await supabase.rpc('fn_cronograma_fisico_financeiro', { p_orcamento_id: id })) ?? [])),
+    'curva-abc-servicos': async () => tabelaAbcServicos(meta, await buscarTodas((de, ate) => supabase.rpc('fn_curva_abc_servicos', { p_orcamento_id: id }).range(de, ate))),
+    'curva-abc-insumos': async () => tabelaAbcInsumos(meta, await buscarTodas((de, ate) => supabase.rpc('fn_curva_abc_insumos', { p_orcamento_id: id }).range(de, ate))),
+    cronograma: async () => tabelaCronograma(meta, montarGradeCronograma(await buscarTodas((de, ate) => supabase.rpc('fn_cronograma_fisico_financeiro', { p_orcamento_id: id }).range(de, ate)))),
     medicao: async () => {
       const m = (medicoes.data ?? []).find((x) => x.id === medicao);
       if (!m) throw new Error('Selecione a medição');
-      return tabelaMedicao(meta, m.numero, ok(await supabase.rpc('fn_medicao_resumo', { p_medicao_id: m.id })) ?? []);
+      return tabelaMedicao(meta, m.numero, await buscarTodas((de, ate) => supabase.rpc('fn_medicao_resumo', { p_medicao_id: m.id }).range(de, ate)));
     },
   };
 

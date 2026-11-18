@@ -32,8 +32,8 @@ function Faixas() {
       {db?.is_demo && (
         <div className="no-print flex items-center gap-3 border-b border-accent/40 bg-accent-soft px-4 py-1 text-xs text-fg">
           <span aria-hidden className="hazard-stripe h-3 w-6 shrink-0 rounded-xs" />
-          <span className="font-mono text-2xs font-semibold uppercase tracking-[0.1em]">Ambiente com dados de exemplo</span>
-          <span className="truncate text-fg-muted">
+          <span className="whitespace-nowrap font-mono text-2xs font-semibold uppercase tracking-[0.1em]"><span className="hidden sm:inline">Ambiente com </span>dados de exemplo</span>
+          <span className="hidden truncate text-fg-muted sm:inline">
             A data-base {db.uf} {formatMesAno(db.ano, db.mes)} é demonstrativa — os preços não são oficiais.
           </span>
           {isAdmin && (

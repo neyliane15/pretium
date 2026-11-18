@@ -1,6 +1,6 @@
 import {
-  BookOpen, Building2, Calculator, ClipboardList, FileSpreadsheet, HardHat, LayoutDashboard, Layers,
-  Package, PencilRuler, Settings2, ShieldCheck, Upload, Users, UsersRound, type LucideIcon,
+  BookOpen, Building, Building2, Calculator, ClipboardList, FileSpreadsheet, HardHat, LayoutDashboard, Layers,
+  Package, PencilRuler, Settings2, ShieldCheck, SlidersHorizontal, Upload, Users, UsersRound, type LucideIcon,
 } from 'lucide-react';
 import { rotas } from '@/routes';
 
@@ -54,9 +54,11 @@ export const NAV: NavGroup[] = [
     itens: [
       { to: rotas.admin, label: 'Painel admin', icon: ShieldCheck, end: true, termos: 'administracao' },
       { to: rotas.adminUsuarios, label: 'Usuários', icon: Users, termos: 'aprovar bloquear' },
+      { to: rotas.adminOrganizacoes, label: 'Organizações', icon: Building, termos: 'escritorios empresas bloquear' },
       { to: rotas.adminSinapi, label: 'Tabelas SINAPI', icon: FileSpreadsheet, end: true, termos: 'datas-base' },
       { to: rotas.adminSinapiImportar, label: 'Importar SINAPI', icon: Upload, termos: 'planilha xlsx csv' },
       { to: rotas.adminAuditoria, label: 'Auditoria', icon: ClipboardList, termos: 'logs' },
+      { to: rotas.adminConfiguracoes, label: 'Configurações', icon: SlidersHorizontal, termos: 'cadastro aprovacao aviso admin_emails' },
     ],
   },
 ];

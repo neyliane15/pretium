@@ -79,8 +79,8 @@ export default function HonorarioEditorPage() {
     }
   };
 
-  const num = (d: Disc, k: keyof Disc, rot: string, casas = 2, suf?: string) => (
-    <NumberInput size="sm" aria-label={rot} className="!h-6" decimals={casas} min={0} value={d[k] as number | null} readOnly={!ed} suffix={suf} onChange={(v) => setD(d.chave, { [k]: v })} />
+  const num = (d: Disc, k: keyof Disc, rot: string, casas = 2, suf?: string, placeholder?: string) => (
+    <NumberInput size="sm" aria-label={rot} className="!h-6" decimals={casas} min={0} value={d[k] as number | null} readOnly={!ed} suffix={suf} placeholder={placeholder} onChange={(v) => setD(d.chave, { [k]: v })} />
   );
 
   return (
@@ -103,9 +103,9 @@ export default function HonorarioEditorPage() {
                   items={PACOTES.map((p) => ({ label: p.nome, onSelect: () => { setDiscs((xs) => [...xs, ...p.itens()]); mud(); } }))} />
                 <Button size="sm" leftIcon={<Plus />} onClick={() => { setDiscs((xs) => [...xs, nova('outro')]); mud(); }}>Disciplina</Button>
               </>} />
-            <Table density="compact" gridLines inset>
+            <Table density="compact" gridLines inset className="min-w-[720px]">
               <THead>
-                <Tr><Th width={170}>Disciplina</Th><Th width={150}>Método</Th><Th>Base de cálculo</Th><Th numeric width={70}>Prazo (d)</Th><Th numeric width={110}>Valor (R$)</Th><Th width={76} /></Tr>
+                <Tr><Th width={150}>Disciplina</Th><Th width={140}>Método</Th><Th>Base de cálculo</Th><Th numeric width={70}>Prazo (d)</Th><Th numeric width={110}>Valor (R$)</Th><Th width={76} /></Tr>
               </THead>
               <TBody>
                 {discs.length === 0 && <TableMessage colSpan={6}>Adicione disciplinas ou um pacote.</TableMessage>}
@@ -118,16 +118,16 @@ export default function HonorarioEditorPage() {
                     <Td className="px-1"><Select size="sm" aria-label="Método" className="!h-6" disabled={!ed} value={d.metodo} onChange={(e) => setD(d.chave, { metodo: e.target.value as HonorarioMetodo })} options={opcoes(LABEL_HONORARIO_METODO)} /></Td>
                     <Td className="px-1">
                       <div className="grid grid-cols-2 items-center gap-1.5">
-                        {d.metodo === 'area' && <>{num(d, 'area_m2', 'Área', 2, 'm²')}{num(d, 'valor_m2', 'Valor por m² (R$)')}</>}
+                        {d.metodo === 'area' && <>{num(d, 'area_m2', 'Área', 2, 'm²', cab.area_m2 !== null && cab.area_m2 !== undefined ? formatNumero(cab.area_m2) : undefined)}{num(d, 'valor_m2', 'Valor por m² (R$)')}</>}
                         {d.metodo === 'percentual_obra' && <>{num(d, 'valor_obra', 'Valor da obra')}{num(d, 'percentual', 'Percentual', 2, '%')}</>}
                         {d.metodo === 'horas' && <>{num(d, 'horas', 'Horas', 1, 'h')}{num(d, 'valor_hora', 'Valor da hora (R$)')}</>}
                         {d.metodo === 'fixo' && num(d, 'valor_fixo', 'Valor fixo (R$)')}
                       </div>
-                      <div className="mt-0.5 grid grid-cols-2 gap-1.5 text-2xs text-fg-subtle">
-                        {d.metodo === 'area' && <><span>área {d.area_m2 === null ? `(proposta: ${formatNumero(cab.area_m2)})` : ''}</span><span>R$/m²</span></>}
-                        {d.metodo === 'percentual_obra' && <><span>valor da obra</span><span>% sobre a obra</span></>}
-                        {d.metodo === 'horas' && <><span>horas técnicas</span><span>R$/hora</span></>}
-                        {d.metodo === 'fixo' && <span>valor fixo (R$)</span>}
+                      <div className="mt-0.5 grid grid-cols-2 gap-1.5 whitespace-nowrap text-2xs text-fg-subtle [&>span]:truncate">
+                        {d.metodo === 'area' && <><span title={d.area_m2 === null ? 'Vazio: usa a área de projeto da proposta' : undefined}>{d.area_m2 === null ? 'área (proposta)' : 'área'}</span><span>R$/m²</span></>}
+                        {d.metodo === 'percentual_obra' && <><span>valor da obra</span><span>% da obra</span></>}
+                        {d.metodo === 'horas' && <><span>horas</span><span>R$/hora</span></>}
+                        {d.metodo === 'fixo' && <span>valor fixo</span>}
                       </div>
                       {d.metodo === 'percentual_obra' && d.valor_obra === null && <div className="mt-0.5 text-2xs text-fg-subtle">{totalObra !== null ? `base: orçamento ${formatBRL(totalObra)}` : 'selecione o orçamento de referência'}</div>}
                     </Td>
@@ -180,7 +180,7 @@ export default function HonorarioEditorPage() {
                 <dd className="flex items-center gap-2"><span className="w-24"><NumberInput size="sm" aria-label="Impostos (%)" readOnly={!ed} value={cab.impostos} max={99} onChange={(v) => { setCab({ ...cab, impostos: v }); mud(); }} suffix="%" /></span><span className="num w-24 text-right">{formatMoeda(tot?.impostos)}</span></dd></div>
               <div className="flex justify-between border-t border-grid pt-1.5 font-semibold"><dt>Total</dt><dd className="num">{formatMoeda(tot?.total)}</dd></div>
             </dl>
-            <p className="mt-2 text-2xs text-fg-subtle">total = (subtotal × (1 − desconto)) ÷ (1 − impostos), arredondado a 2 casas — igual a fn_honorario_recalcular.</p>
+            <p className="mt-2 text-2xs text-fg-subtle">total = (subtotal × (1 − desconto)) ÷ (1 − impostos), arredondado a 2 casas.</p>
           </Card>
           <Card>
             <Rotulo>Cronograma de projeto</Rotulo>

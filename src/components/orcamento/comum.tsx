@@ -28,7 +28,7 @@ export { type DataBaseResumo };
 export function DataBaseTag({ db, className }: { db: DataBaseResumo | null | undefined; className?: string }) {
   if (!db) return <span className="text-fg-subtle">—</span>;
   return (
-    <span className={cn('inline-flex items-center gap-1.5', className)}>
+    <span className={cn('inline-flex items-center gap-1.5 whitespace-nowrap', className)}>
       <span className="font-mono text-xs text-fg-muted">
         SINAPI {db.uf} <span className="text-fg">{formatMesAno(db.ano, db.mes)}</span>
       </span>

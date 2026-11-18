@@ -118,6 +118,21 @@ Escala Tailwind padrão (4px). Ritmo vertical recomendado: 4 / 8 / 12 / 16 / 24.
 | Padding de card | 16px; cabeçalho 10px × 16px |
 | Gap de formulário | 12px vertical, 16px entre colunas |
 
+### 3.1 Telas estreitas (< 768px, `md`)
+
+Validado a 390px (celular). Nenhuma tela pode gerar rolagem horizontal do documento.
+
+- **Sidebar vira gaveta**: some do fluxo e abre sobre o conteúdo pelo botão "Abrir menu" (ícone de
+  hambúrguer à esquerda da Topbar), com fundo escurecido; fecha com Esc, clique no fundo ou ao navegar.
+- **Topbar**: a busca rápida (Ctrl K) fica oculta; seletor de organização e usuário permanecem.
+- **Conteúdo**: padding cai para 12px; ações do `PageHeader` quebram linha (`max-w-full`).
+- **Tabelas largas** (planilha, medição, honorários, admin) rolam **dentro** do próprio contêiner;
+  células de código (`Td mono`) e a etiqueta de data-base não quebram linha. Tabelas de edição densa
+  podem fixar `min-w-[…]` para não espremer os campos.
+- **KPIs** (`Stat`): valor em `text-lg` no celular e `text-2xl` a partir de `sm`, sem quebra de linha.
+- **Faixa de dados de exemplo**: no celular mostra só o selo "DADOS DE EXEMPLO" (e o atalho do admin);
+  a frase explicativa aparece a partir de `sm`.
+
 ## 4. Bordas, raios, sombras
 
 - **Bordas**: sempre 1px (`border`). Padrão `border-border`; controles e cabeçalhos
@@ -136,7 +151,7 @@ Escala Tailwind padrão (4px). Ritmo vertical recomendado: 4 / 8 / 12 / 16 / 24.
 | `.corner-marks-brand` | cantoneiras em laranja | modal, card de auth, KPI em destaque |
 | `.accent-rule` | filete laranja 28×2px no topo-esquerdo | card de seção principal |
 | `.blueprint-grid` | malha 24px em `--c-grid` | telas de auth, estados vazios, 404 |
-| `.hazard-stripe` | zebrado amarelo/grafite 45° | faixa "AMBIENTE DE DEMONSTRAÇÃO" (fina, 4px) |
+| `.hazard-stripe` | zebrado amarelo/grafite 45° | faixa "AMBIENTE COM DADOS DE EXEMPLO" (selo 24×12px) e faixa dos relatórios impressos |
 | `.num` | mono tabular | todo número |
 
 Use com parcimônia: no máximo um elemento com cantoneiras laranja por tela.

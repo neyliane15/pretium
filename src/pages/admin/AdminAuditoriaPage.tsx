@@ -23,7 +23,15 @@ const ACOES: { value: string; label: string }[] = [
   { value: 'importar_sinapi', label: 'Importação SINAPI' },
   { value: 'config', label: 'Configuração' },
 ];
-const ENTIDADES = ['', 'profiles', 'organizacoes', 'organizacao_membros', 'convites', 'clientes', 'obras', 'orcamentos', 'orcamento_itens', 'configuracoes', 'sinapi', 'datas_base', 'auth'];
+/** Entidades auditadas (tabelas com trigger de auditoria + ações registradas por RPC) e seus rótulos. */
+const ROTULO_ENTIDADE: Record<string, string> = {
+  profiles: 'Usuários', organizacoes: 'Organizações', organizacao_membros: 'Membros', convites: 'Convites',
+  configuracoes: 'Configurações', clientes: 'Clientes', obras: 'Obras', orcamentos: 'Orçamentos', orcamento_bdis: 'BDIs',
+  medicoes: 'Medições', honorarios: 'Honorários', insumos: 'Insumos próprios', composicoes: 'Composições próprias',
+  encargos_sociais: 'Encargos sociais', datas_base: 'Datas-base SINAPI', sinapi_importacoes: 'Importações SINAPI',
+};
+const ENTIDADES = ['', ...Object.keys(ROTULO_ENTIDADE)];
+const rotuloEntidade = (e: string) => ROTULO_ENTIDADE[e] ?? e;
 
 const BADGE_ACAO: Record<string, BadgeVariant> = { insert: 'success', update: 'info', delete: 'danger', login: 'neutral', bloquear_usuario: 'danger', aprovar_usuario: 'success', importar_sinapi: 'brand', config: 'warning' };
 const rotuloAcao = (a: string) => ACOES.find((x) => x.value === a)?.label ?? a;
@@ -99,7 +107,7 @@ export default function AdminAuditoriaPage() {
         <Field label="Até">{(p) => <DateInput {...p} size="sm" value={f.ate} min={f.de ?? undefined} onChange={(ate) => set({ ate })} />}</Field>
         <Field label="Usuário (e-mail)">{(p) => <Input {...p} size="sm" prefix={<Search />} value={usuario} onChange={(e) => setUsuario(e.target.value)} placeholder="parte do e-mail" />}</Field>
         <Field label="Entidade">
-          {(p) => <Select {...p} size="sm" value={f.entidade} onChange={(e) => set({ entidade: e.target.value })} options={ENTIDADES.map((e) => ({ value: e, label: e || 'Todas as entidades' }))} />}
+          {(p) => <Select {...p} size="sm" value={f.entidade} onChange={(e) => set({ entidade: e.target.value })} options={ENTIDADES.map((e) => ({ value: e, label: e ? rotuloEntidade(e) : 'Todas as entidades' }))} />}
         </Field>
         <Field label="Ação">{(p) => <Select {...p} size="sm" value={f.acao} onChange={(e) => set({ acao: e.target.value })} options={ACOES} />}</Field>
         <Button
@@ -154,7 +162,7 @@ export default function AdminAuditoriaPage() {
                   <Td>
                     <Badge variant={BADGE_ACAO[l.acao] ?? 'outline'}>{rotuloAcao(l.acao)}</Badge>
                   </Td>
-                  <Td mono>{l.entidade}</Td>
+                  <Td title={l.entidade}>{rotuloEntidade(l.entidade)}</Td>
                   <Td truncate mono muted title={l.entidade_id ?? undefined}>
                     {l.entidade_id ?? '—'}
                   </Td>
@@ -174,14 +182,14 @@ export default function AdminAuditoriaPage() {
         onClose={() => setAberto(null)}
         width={640}
         eyebrow={aberto ? `Evento #${aberto.id}` : undefined}
-        title={aberto ? `${rotuloAcao(aberto.acao)} · ${aberto.entidade}` : undefined}
+        title={aberto ? `${rotuloAcao(aberto.acao)} · ${rotuloEntidade(aberto.entidade)}` : undefined}
         description={aberto ? `${formatDataHora(aberto.created_at)} · ${aberto.user_email ?? 'sistema'}` : undefined}
       >
         {aberto && (
           <div className="flex flex-col gap-4">
             <dl className="grid grid-cols-2 rounded-sm border border-border font-mono text-2xs uppercase tracking-[0.08em]">
               {[
-                ['Entidade', aberto.entidade],
+                ['Entidade', `${rotuloEntidade(aberto.entidade)} (${aberto.entidade})`],
                 ['Registro', aberto.entidade_id ?? '—'],
                 ['Organização', aberto.organizacao_id ?? '—'],
                 ['Usuário', aberto.user_id ?? '—'],

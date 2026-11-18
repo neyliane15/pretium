@@ -107,7 +107,7 @@ export function Th({ numeric, sort, onSort, width, className, children, style, .
       {...rest}
     >
       {sortable ? (
-        <button type="button" onClick={onSort} className={cn('inline-flex items-center gap-1 hover:text-fg focus-visible:outline-none focus-visible:underline', numeric && 'flex-row-reverse')}>
+        <button type="button" onClick={onSort} className={cn('inline-flex items-center gap-1 uppercase hover:text-fg focus-visible:outline-none focus-visible:underline', numeric && 'flex-row-reverse')}>
           {children}
           <Icon aria-hidden className={cn('h-3 w-3', !sort && 'opacity-40')} />
         </button>
@@ -134,7 +134,7 @@ export function Td({ numeric, mono, muted, truncate, className, ...rest }: TdPro
       className={cn(
         'px-2 align-middle text-fg',
         numeric && 'num whitespace-nowrap text-right',
-        mono && 'font-mono text-xs',
+        mono && 'whitespace-nowrap font-mono text-xs',
         muted && 'text-fg-muted',
         truncate && 'max-w-0 truncate',
         className,

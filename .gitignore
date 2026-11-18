@@ -15,3 +15,5 @@ supabase/.temp
 supabase/.branches
 npm-debug.log*
 test-results
+src/types/database.generated.ts
+playwright-report

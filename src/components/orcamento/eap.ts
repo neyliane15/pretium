@@ -2,7 +2,7 @@
  * Montagem da EAP (árvore etapas → subetapas → itens) para a planilha, sintético e relatórios.
  * Lógica pura; totais e numeração sempre via src/lib/calc.ts (mesmas regras do SQL).
  */
-import { calcularItem, numerarEap, somaMoeda, totalizarOrcamento } from '@/lib/calc';
+import { calcularItem, numerarEap, totalizarOrcamento } from '@/lib/calc';
 import type { OrcamentoEtapa, OrcamentoItem } from '@/types/database';
 
 type EtapaBase = Pick<OrcamentoEtapa, 'id' | 'parent_id' | 'ordem' | 'nome' | 'codigo'>;
@@ -134,5 +134,3 @@ export function novaOrdemIrmao<T extends { id: string; ordem: number }>(irmaos: 
   return alvo + 1;
 }
 
-/** Soma de totais de linhas de itens (em centavos). */
-export const somaItens = (linhas: readonly { total: number }[]) => somaMoeda(linhas.map((l) => l.total));

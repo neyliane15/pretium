@@ -22,7 +22,7 @@ export function Stat({ label, value, hint, icon, delta, className, highlight }: 
         <span className="font-mono text-2xs uppercase tracking-[0.08em] text-fg-subtle">{label}</span>
         {icon && <span className="text-fg-subtle [&_svg]:h-4 [&_svg]:w-4">{icon}</span>}
       </div>
-      <div className="num mt-1.5 text-2xl font-semibold leading-8 tracking-tight text-fg">{value}</div>
+      <div className="num mt-1.5 whitespace-nowrap text-lg font-semibold leading-7 tracking-tight text-fg sm:text-2xl sm:leading-8">{value}</div>
       {(hint || delta) && (
         <div className="mt-0.5 flex items-center gap-2 text-xs text-fg-muted">
           {delta && (

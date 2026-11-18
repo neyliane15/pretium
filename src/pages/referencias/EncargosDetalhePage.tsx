@@ -137,7 +137,7 @@ export default function EncargosDetalhePage() {
           </TFoot>
         </Table>
       </Card>
-      <p className="mt-2 text-2xs text-fg-subtle"><Rotulo>Nota</Rotulo> o total é recalculado também no banco (trigger); os insumos SINAPI de mão de obra já incluem encargos.</p>
+      <p className="mt-2 text-2xs text-fg-subtle"><Rotulo>Nota</Rotulo> o total é recalculado automaticamente ao salvar; os insumos SINAPI de mão de obra já incluem encargos.</p>
       <ConfirmDialog open={confirmar} onClose={() => setConfirmar(false)} destructive loading={excluir.isPending} title="Excluir tabela de encargos?" confirmLabel="Excluir"
         description="Orçamentos que a utilizam ficam sem tabela de encargos."
         onConfirm={() => excluir.mutate(e.id, { onSuccess: () => navigate(rotas.encargos), onError: (err) => toast.error('Não foi possível excluir', mensagemErro(err)) })} />

@@ -117,7 +117,7 @@ export default function AdminConfiguracoesPage() {
           </Field>
         </Linha>
         <Linha titulo="UF padrão" descricao="Sugerida em novas organizações e na importação SINAPI." publica={publica('uf_padrao', true)} meta={meta('uf_padrao')}>
-          <Select aria-label="UF padrão" value={v.uf_padrao} onChange={(e) => setV({ ...v, uf_padrao: e.target.value })} options={UFS.map((u) => ({ value: u, label: u }))} className="max-w-[120px]" />
+          <div className="w-[120px]"><Select aria-label="UF padrão" value={v.uf_padrao} onChange={(e) => setV({ ...v, uf_padrao: e.target.value })} options={UFS.map((u) => ({ value: u, label: u }))} /></div>
         </Linha>
         <Linha titulo="Validade dos convites" descricao="Dias até um convite de organização expirar." publica={publica('convite_validade_dias', false)} meta={meta('convite_validade_dias')}>
           <div className="max-w-[140px]">

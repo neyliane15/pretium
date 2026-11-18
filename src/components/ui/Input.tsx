@@ -35,7 +35,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     <input
       ref={ref}
       aria-invalid={invalid || rest['aria-invalid'] || undefined}
-      className={cn(controlBase, controlSizes[size], numeric && 'num text-right', prefix && 'pl-7', suffix && 'pr-8', className)}
+      className={cn(controlBase, controlSizes[size], numeric && 'num text-right', prefix && 'pl-7', suffix && (typeof suffix === 'string' && suffix.length > 2 ? 'pr-11' : 'pr-8'), className)}
       {...rest}
     />
   );

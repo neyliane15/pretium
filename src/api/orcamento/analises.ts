@@ -8,7 +8,7 @@ import { qkOrc } from './keys';
 import { invalidarOrcamento } from './orcamentos';
 import { buscarTodas, ok, okVoid, useOrgId } from './util';
 import type {
-  Cronograma, CronogramaPeriodicidade, DashboardResumo, EncargosSociais, Honorario, HonorarioDisciplina, Json, Medicao, MedicaoItem,
+  Cronograma, CronogramaPeriodicidade, DashboardResumo, EncargosSociais, Honorario, HonorarioDisciplina, Json, Medicao,
   MedicaoStatus, OrcamentoEquipe, OrcamentoEquipeMembro, TablesInsert, TablesUpdate,
 } from '@/types/database';
 
@@ -107,15 +107,6 @@ export function useMedicaoResumo(medicaoId: string | undefined) {
     queryKey: [...qkOrc.medicao(medicaoId ?? ''), 'resumo'] as const,
     enabled: Boolean(medicaoId),
     queryFn: () => buscarTodas((de, ate) => supabase.rpc('fn_medicao_resumo', { p_medicao_id: medicaoId! }).range(de, ate)),
-  });
-}
-
-export function useMedicaoItens(medicaoId: string | undefined) {
-  return useQuery({
-    queryKey: [...qkOrc.medicao(medicaoId ?? ''), 'itens'] as const,
-    enabled: Boolean(medicaoId),
-    queryFn: (): Promise<MedicaoItem[]> =>
-      buscarTodas((de, ate) => supabase.from('medicao_itens').select('*').eq('medicao_id', medicaoId!).order('id').range(de, ate)),
   });
 }
 

@@ -237,7 +237,7 @@ export default function OrcamentoBdiPage() {
             <div className="flex justify-between"><span>I = PIS+COFINS+ISS+CPRB</span><span className="text-fg">{formatPercent(I)}</span></div>
             <div className="flex justify-between border-t border-grid pt-1 font-semibold text-fg"><span>BDI</span><span>{bdi !== null ? formatPercent(bdi) : '—'}</span></div>
           </div>
-          <p className="mt-2 text-2xs text-fg-subtle">Arredondamento comercial a 2 casas, igual ao banco (coluna gerada `bdi`). Confira as faixas com o texto do acórdão antes de uso contratual.</p>
+          <p className="mt-2 text-2xs text-fg-subtle">Arredondamento comercial a 2 casas (o mesmo usado no cálculo dos itens). Confira as faixas com o texto do acórdão antes de uso contratual.</p>
         </Card>
       </div>
 

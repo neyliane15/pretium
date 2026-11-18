@@ -743,7 +743,8 @@ encargos_sociais 1─* encargos_sociais_itens
 ### 6.2 Funções auxiliares (B1, `0005`) — usadas por todas as políticas
 
 ```sql
--- todas: language sql|plpgsql, stable, security definer, set search_path = public
+-- todas: language sql|plpgsql, stable, security definer, set search_path = ''  (B1; as funções de B2 usam
+--        search_path = public, pg_temp desde a migração 0031 — ver §7.3)
 is_active_user() returns boolean            -- profile do auth.uid() com status 'active'
 is_admin() returns boolean                  -- is_active_user() and papel_global = 'admin'
 org_papel(p_organizacao_id uuid) returns org_role   -- null se não membro
@@ -865,6 +866,12 @@ Trigger `fn_profiles_protege_campos()` (before update on profiles): se `not is_a
 | `fn_honorario_recalcular` | `p_honorario_id uuid` | `honorarios` | recalcula disciplinas e totais (§8.7) |
 | `fn_dashboard_resumo` | `p_organizacao_id uuid` | `jsonb` | `{obras_por_status: {status: n}, orcamentos_total, valor_orcado_total, valor_aprovado_total, medido_total, ultimos_orcamentos: [{id, nome, obra_nome, total, status, updated_at}] (5), data_base_mais_recente: {id, uf, ano, mes, regime, is_demo}}` |
 
+#### Referências próprias
+
+| Função | Parâmetros | Retorno | Regras |
+|---|---|---|---|
+| `fn_composicao_propria_salvar` (migração `0030`) | `p_id uuid, p_cabecalho jsonb, p_itens jsonb default '[]'` | `uuid` (id da composição) | `p_id = null` cria (exige `p_cabecalho.organizacao_id`), senão atualiza a composição própria `p_id`. `p_cabecalho = {codigo, descricao, unidade, grupo?, observacao?, ativo?, organizacao_id?}`; `p_itens = [{tipo_item: 'insumo'\|'composicao', referencia_id (ou insumo_id/subcomposicao_id), coeficiente}]`, `ordem` = posição, a lista **substitui** os itens. `security invoker` (RLS vale) + `assert_pode_editar`; tudo numa transação (erro em qualquer item desfaz cabeçalho e itens). Erros `P0001` (validação), `42501` (SINAPI/sem permissão), `23505` (código duplicado). Usada por `useSalvarComposicaoPropria` |
+
 #### Encargos
 
 | Função | Parâmetros | Retorno |
@@ -882,6 +889,26 @@ Trigger `fn_profiles_protege_campos()` (before update on profiles): se `not is_a
 | `fn_sinapi_finalizar_importacao` | `p_importacao_id uuid, p_publicar boolean default false` | `sinapi_importacoes` | para `analitico`: remove itens de composições SINAPI tocadas nesta importação cujo `importacao_id` ≠ atual; status `concluida`; se `p_publicar`, `datas_base.status='publicada', publicada_em=now()`; auditoria `importar_sinapi` |
 | `fn_sinapi_cancelar_importacao` | `p_importacao_id uuid` | `void` | status `cancelada` (dados já gravados permanecem; data-base continua `rascunho`) |
 | `fn_sinapi_publicar_data_base` | `p_data_base_id uuid, p_status data_base_status` | `datas_base` | admin |
+
+### 7.3 Endurecimento e convenções de segurança (revisão final, `0031`)
+
+- Toda função do schema `public` tem `search_path` fixo: `''` (B1, nomes totalmente qualificados) ou
+  `public, pg_temp` (B2 e funções puras; `pg_temp` por último impede que uma tabela temporária
+  "sombreie" uma tabela dentro de função `security definer`). O `supabase db lint` não aponta nada.
+- `EXECUTE` é revogado de `anon`/`PUBLIC` em todas as funções; `authenticated`/`service_role` mantêm
+  exatamente o acesso anterior. Os privilégios padrão do schema também deixam de conceder `EXECUTE`
+  a `anon` em funções futuras — **toda RPC nova precisa de `grant execute ... to authenticated`**.
+- `anon` só lê `configuracoes` públicas (tabela). Nenhuma RPC funciona sem login.
+- `CREATE` no schema `public` negado a `anon`/`authenticated`.
+
+### 7.4 Paginação das leituras (front)
+
+O PostgREST corta cada resposta em `max_rows` (`supabase/config.toml`: 5000; padrão do Supabase
+Cloud: 1000). Leituras que podem crescer com o orçamento — itens, etapas, curva ABC, cronograma
+físico-financeiro e distribuições, resumo e itens de medição, mão de obra e as exportações — usam
+`buscarTodas()` (`src/api/orcamento/util.ts`), que pagina por `range` em lotes de 1000 até receber
+um lote incompleto, com ordenação total (`ordem`, `id`). Por isso `max_rows` **não pode** ser menor
+que 1000.
 
 ## 8. Regras de cálculo
 

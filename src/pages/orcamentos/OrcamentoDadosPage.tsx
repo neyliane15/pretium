@@ -108,7 +108,7 @@ export default function OrcamentoDadosPage() {
                 <Button size="sm" leftIcon={<RefreshCcw />} disabled={!novaDb} onClick={() => setConfirmTroca(true)}>Trocar</Button>
               </div>
             )}
-            <p className="text-xs text-fg-subtle">Ao trocar, todos os itens não manuais são recalculados (`fn_orcamento_trocar_data_base`). Cotações do orçamento são mantidas.</p>
+            <p className="text-xs text-fg-subtle">Ao trocar, todos os itens sem custo manual são recalculados com os preços da nova data-base. Cotações do orçamento são mantidas.</p>
           </CardBody>
         </Card>
 
