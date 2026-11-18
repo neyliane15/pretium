@@ -2,7 +2,7 @@
 /**
  * Runner dos testes SQL de REFERÊNCIAS/ORÇAMENTO (BACKEND-2) sobre PGlite (Postgres em WASM).
  *
- * Requer @electric-sql/pglite fora do projeto (não está no package.json):
+ * Usa @electric-sql/pglite (devDependency do projeto: `npm run test:db`). Alternativa fora do projeto:
  *     mkdir -p /tmp/pglite && cd /tmp/pglite && npm init -y && npm i @electric-sql/pglite
  *     PGLITE_DIR=/tmp/pglite/node_modules node supabase/tests/orcamento/orc_run.mjs
  *

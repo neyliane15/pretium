@@ -8,7 +8,7 @@ import { qkOrc } from './keys';
 import { ok, okVoid, useOrgId } from './util';
 import type {
   Composicao, ComposicaoAnaliticaLinha, ComposicaoItemTipo, DataBase, EncargosSociais, EncargosSociaisItem, Insumo, InsumoTipo,
-  ReferenciaBusca, TablesInsert, TablesUpdate,
+  Json, ReferenciaBusca, TablesInsert, TablesUpdate,
 } from '@/types/database';
 
 // ─── Datas-base ───────────────────────────────────────────────────────────
@@ -144,41 +144,30 @@ export interface ComposicaoPropriaInput {
 }
 
 /**
- * Salva cabeçalho + substitui itens da composição própria.
- * (Sem RPC dedicada no contrato: upsert do cabeçalho e troca dos itens via tabela, protegida por RLS.)
+ * Salva cabeçalho + substitui itens da composição própria numa única transação
+ * (RPC `fn_composicao_propria_salvar`, migração 0030 — antes eram 3 requisições não atômicas).
  */
 export function useSalvarComposicaoPropria() {
   const qc = useQueryClient();
   const orgId = useOrgId();
   return useMutation({
     mutationFn: async (input: ComposicaoPropriaInput): Promise<string> => {
-      const cab = {
+      const cabecalho = {
+        organizacao_id: orgId,
         codigo: input.codigo.trim(),
         descricao: input.descricao.trim(),
         unidade: input.unidade.trim().toUpperCase(),
         grupo: input.grupo,
         observacao: input.observacao,
       };
-      let id = input.id;
-      if (id) {
-        okVoid(await supabase.from('composicoes').update(cab).eq('id', id));
-        okVoid(await supabase.from('composicao_itens').delete().eq('composicao_id', id));
-      } else {
-        const r = await supabase.from('composicoes').insert({ ...cab, organizacao_id: orgId, fonte: 'propria' }).select('id').single();
-        id = ok(r).id;
-      }
-      if (input.itens.length) {
-        const linhas: TablesInsert<'composicao_itens'>[] = input.itens.map((it, i) => ({
-          composicao_id: id!,
-          tipo_item: it.tipo_item,
-          insumo_id: it.tipo_item === 'insumo' ? it.referencia_id : null,
-          subcomposicao_id: it.tipo_item === 'composicao' ? it.referencia_id : null,
-          coeficiente: it.coeficiente,
-          ordem: i + 1,
-        }));
-        okVoid(await supabase.from('composicao_itens').insert(linhas));
-      }
-      return id!;
+      const itens = input.itens.map((it) => ({ tipo_item: it.tipo_item, referencia_id: it.referencia_id, coeficiente: it.coeficiente }));
+      return ok(
+        await supabase.rpc('fn_composicao_propria_salvar', {
+          p_id: input.id ?? null,
+          p_cabecalho: cabecalho as unknown as Json,
+          p_itens: itens as unknown as Json,
+        }),
+      );
     },
     onSuccess: (id) => {
       void qc.invalidateQueries({ queryKey: qkOrc.composicoesProprias(orgId) });

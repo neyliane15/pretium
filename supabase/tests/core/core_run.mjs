@@ -2,8 +2,7 @@
 /**
  * Runner dos testes SQL do NÚCLEO (BACKEND-1) sobre PGlite (Postgres em WASM).
  *
- * Requer o pacote @electric-sql/pglite, que NÃO está no package.json do projeto.
- * Instale onde preferir, por exemplo fora do projeto:
+ * Usa @electric-sql/pglite (devDependency do projeto: `npm run test:db`). Alternativa fora do projeto:
  *     mkdir -p /tmp/pglite && cd /tmp/pglite && npm init -y && npm i @electric-sql/pglite
  * e rode:
  *     PGLITE_DIR=/tmp/pglite/node_modules node supabase/tests/core/core_run.mjs

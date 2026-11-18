@@ -57,3 +57,7 @@ enabled = false
 
 [analytics]
 enabled = false
+
+[realtime]
+# Não usado pelo app. Desligado também porque o container falha em hosts sem IPv6.
+enabled = false

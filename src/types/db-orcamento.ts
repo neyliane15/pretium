@@ -722,6 +722,8 @@ export interface OrcamentoFunctions {
   fn_honorario_recalcular: { Args: { p_honorario_id: Uuid }; Returns: Honorario };
   fn_dashboard_resumo: { Args: { p_organizacao_id: Uuid }; Returns: DashboardResumo };
   fn_encargos_duplicar: { Args: { p_encargos_id: Uuid; p_organizacao_id: Uuid; p_nome: string }; Returns: Uuid };
+  /** 0030 (TESTES): cria/atualiza composição própria + substitui itens, atômico. */
+  fn_composicao_propria_salvar: { Args: { p_id: Uuid | null; p_cabecalho: Json; p_itens?: Json }; Returns: Uuid };
   // Importação SINAPI (admin)
   fn_sinapi_iniciar_importacao: {
     Args: { p_uf: string; p_ano: number; p_mes: number; p_regime: RegimeDesoneracao; p_tipo: ImportacaoTipo; p_arquivo_nome?: string | null };
