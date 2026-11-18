@@ -12,6 +12,7 @@ import { mensagemErro } from '@/lib/supabase';
 import type { DataBaseStatus } from '@/types/database';
 import { rotas } from '@/routes';
 import { EstadoErro } from '@/pages/_shared/EstadoErro';
+import { SincronizacaoSinapiCard } from '@/components/admin/SincronizacaoSinapiCard';
 
 function ErrosDrawer({ imp, onClose }: { imp: ImportacaoComDataBase | null; onClose: () => void }) {
   const erros = imp?.erros ?? [];
@@ -74,6 +75,7 @@ export default function AdminSinapiPage() {
 
   return (
     <div className="flex flex-col gap-4">
+      <SincronizacaoSinapiCard />
       <Card flush accent>
         <CardHeader
           eyebrow="Referências"

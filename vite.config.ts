@@ -30,6 +30,6 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
-    include: ['src/**/*.{test,spec}.{ts,tsx}', 'supabase/tests/**/*.test.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}', 'supabase/tests/**/*.test.ts', 'api/**/*.test.ts'],
   },
 });

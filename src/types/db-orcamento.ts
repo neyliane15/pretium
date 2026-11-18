@@ -114,6 +114,22 @@ export interface ImportacaoErro {
   mensagem: string;
 }
 
+/** Busca automática da SINAPI na Caixa (0032). Escrita só pela função de servidor (service_role). */
+export interface SinapiSincronizacao {
+  id: Uuid;
+  ano: number;
+  mes: number;
+  ufs: string[];
+  origem: 'usuario' | 'automatica' | 'admin';
+  status: 'processando' | 'concluida' | 'erro' | 'indisponivel';
+  mensagem: string | null;
+  arquivo_url: string | null;
+  datas_base: Uuid[];
+  solicitado_por: Uuid | null;
+  iniciado_em: string;
+  finalizado_em: string | null;
+}
+
 export interface SinapiImportacao {
   id: Uuid;
   data_base_id: Uuid;
@@ -417,6 +433,11 @@ export interface OrcamentoTables {
     SinapiImportacao,
     InsertOf<SinapiImportacao, 'id' | 'status' | 'arquivo_nome' | 'arquivo_path' | 'total_linhas' | 'linhas_ok' | 'linhas_erro' | 'erros' | 'iniciado_em' | 'finalizado_em' | 'created_by'>,
     [Fk<'sinapi_importacoes_data_base_id_fkey', 'data_base_id', 'datas_base'>]
+  >;
+  sinapi_sincronizacoes: TableDef<
+    SinapiSincronizacao,
+    InsertOf<SinapiSincronizacao, 'id' | 'origem' | 'status' | 'mensagem' | 'arquivo_url' | 'datas_base' | 'solicitado_por' | 'iniciado_em' | 'finalizado_em'>,
+    []
   >;
   orcamentos: TableDef<
     Orcamento,
@@ -734,6 +755,8 @@ export interface OrcamentoFunctions {
   fn_sinapi_importar_composicao_itens: { Args: { p_importacao_id: Uuid; p_linhas: Json }; Returns: number };
   fn_sinapi_finalizar_importacao: { Args: { p_importacao_id: Uuid; p_publicar?: boolean }; Returns: SinapiImportacao };
   fn_sinapi_cancelar_importacao: { Args: { p_importacao_id: Uuid }; Returns: undefined };
+  fn_sinapi_ufs_em_uso: { Args: Record<string, never>; Returns: string[] };
+  fn_sinapi_disponibilidade: { Args: { p_uf: string }; Returns: { ano: number; mes: number; regime: RegimeDesoneracao; status: DataBaseStatus; data_base_id: Uuid }[] };
   fn_sinapi_publicar_data_base: { Args: { p_data_base_id: Uuid; p_status: DataBaseStatus }; Returns: DataBase };
 }
 

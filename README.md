@@ -147,6 +147,34 @@ O resultado (`dist/`) é um site estático de página única (SPA): o servidor p
 Depois do primeiro deploy, acesse o endereço, cadastre-se com um e-mail de `admin_emails` e
 siga o [guia do usuário](docs/ENTREGA.md).
 
+## Busca automática da SINAPI (todas as UFs)
+
+O Pretium baixa a SINAPI oficial direto da Caixa — sem importar planilha. A Caixa publica, desde
+2025, **um pacote nacional por mês** (`caixa.gov.br/Downloads/sinapi-relatorios-mensais/SINAPI-AAAA-MM-formato-xlsx.zip`)
+com as 27 UFs; o servidor lê a planilha de referência (abas ISD/ICD, CSD/CCD e Analítico) e grava a UF
+pedida nos dois regimes, já publicada.
+
+- **Usuário**: *Consulta SINAPI → Buscar tabela oficial* (ou, no novo orçamento, *Buscar na Caixa*):
+  escolhe a UF e o mês. Leva de 1 a 3 minutos.
+- **Admin**: *Administração → Tabelas SINAPI → Busca automática*: uma UF, as UFs em uso ou as 27.
+- **Todo dia** (Vercel Cron, `vercel.json`) o sistema verifica se saiu mês novo e atualiza as UFs em
+  uso (as que já têm tabela oficial e as UFs padrão dos escritórios).
+
+**Configuração (uma vez), no Vercel → *Settings → Environment Variables*:**
+
+| Variável | Valor |
+|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | a chave **secreta** do Supabase (*Project Settings → API Keys → Secret key*, `sb_secret_…`, ou a `service_role` legada). Só no servidor — **nunca** com prefixo `VITE_`. |
+| `CRON_SECRET` | qualquer texto longo e aleatório (protege a rotina diária). |
+
+`VITE_SUPABASE_URL` já cadastrada é reaproveitada. Depois de salvar, faça *Redeploy*. No Supabase,
+quem já instalou roda `supabase/instalacao/06_atualizacao_busca_sinapi.sql` no SQL Editor.
+
+**Limitações:** a Caixa não oferece API; se ela mudar o endereço/formato do pacote ou bloquear o
+acesso automático, a busca avisa e o importador manual (*Importar SINAPI*) continua disponível.
+Retificações publicadas com outro nome de arquivo não são detectadas. Cada UF ocupa ~3 MB por mês
+e regime no banco — importar as 27 todo mês enche o plano gratuito do Supabase em poucos meses.
+
 ## Tabela SINAPI oficial
 
 O banco **não** traz preços oficiais. Para usá-los:

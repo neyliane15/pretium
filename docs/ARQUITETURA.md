@@ -890,6 +890,19 @@ Trigger `fn_profiles_protege_campos()` (before update on profiles): se `not is_a
 | `fn_sinapi_cancelar_importacao` | `p_importacao_id uuid` | `void` | status `cancelada` (dados já gravados permanecem; data-base continua `rascunho`) |
 | `fn_sinapi_publicar_data_base` | `p_data_base_id uuid, p_status data_base_status` | `datas_base` | admin |
 
+### 7.2.1 Busca automática da SINAPI (`0032`, `api/sinapi/*`)
+
+- Função de servidor (Vercel, Node) `POST /api/sinapi/sincronizar` — corpo `{ uf, ano?, mes?, forcar? }`
+  (usuário ativo) ou `{ ufs: [...] | 'em_uso' | 'todas' }` (admin). Autentica pelo token da sessão,
+  baixa `SINAPI-AAAA-MM-formato-xlsx.zip` da Caixa, lê a planilha de referência
+  (`src/lib/sinapi/nacional.ts`) e grava com a chave service_role pelas RPCs de importação (§7.2):
+  por UF e regime, insumos → (analítico, uma vez por mês) → composições com publicação.
+- `GET /api/sinapi/cron` (diário, `CRON_SECRET`): UFs de `fn_sinapi_ufs_em_uso()` que não têm o mês
+  mais recente; o que não couber em ~4 min fica para o dia seguinte.
+- `assert_admin()` aceita `auth.role() = 'service_role'`.
+- Tabela `sinapi_sincronizacoes` (histórico/trava; leitura para usuários ativos, escrita só service_role),
+  `fn_sinapi_ufs_em_uso() → text[]`, `fn_sinapi_disponibilidade(p_uf text) → table(ano, mes, regime, status, data_base_id)`.
+
 ### 7.3 Endurecimento e convenções de segurança (revisão final, `0031`)
 
 - Toda função do schema `public` tem `search_path` fixo: `''` (B1, nomes totalmente qualificados) ou

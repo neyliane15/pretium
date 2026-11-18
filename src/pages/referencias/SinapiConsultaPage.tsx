@@ -9,6 +9,7 @@ import { useDebounce } from '@/hooks/orcamento/useDebounce';
 import { formatMoeda } from '@/lib/format';
 import { LABEL_INSUMO_TIPO } from '@/lib/labels';
 import { rotas } from '@/routes';
+import { BotaoBuscarSinapiCaixa } from '@/components/referencias/BuscarSinapiCaixa';
 
 /** Consulta SINAPI (e próprias) por código/descrição na data-base escolhida. Dono: FRONTEND-2. */
 export default function SinapiConsultaPage() {
@@ -26,7 +27,7 @@ export default function SinapiConsultaPage() {
 
   return (
     <>
-      <PageHeader title="Consulta SINAPI" description="Insumos e composições com preço na data-base, incluindo os próprios da organização." badges={dbSel && <DataBaseTag db={dbSel} />} />
+      <PageHeader title="Consulta SINAPI" description="Insumos e composições com preço na data-base, incluindo os próprios da organização." badges={dbSel && <DataBaseTag db={dbSel} />} actions={<BotaoBuscarSinapiCaixa ufInicial={dbSel?.uf} />} />
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <div className="w-80 flex-1 md:flex-none">
           <Input autoFocus prefix={<Search />} placeholder="Código (ex.: 87503) ou descrição (ex.: alvenaria bloco cerâmico)" aria-label="Buscar" value={termo}

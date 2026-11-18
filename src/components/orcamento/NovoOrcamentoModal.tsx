@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -15,6 +15,7 @@ import { novoOrcamentoSchema, type NovoOrcamentoForm } from '@/schemas/orcamento
 import { BDI_ZERO, presetTcu } from './bdiPresets';
 import {} from './comum';
 import { rotuloDataBase } from './dataBase';
+import { BuscarSinapiCaixaModal } from '@/components/referencias/BuscarSinapiCaixa';
 
 /** Criação de orçamento (`fn_orcamento_criar`) com data-base e preset de BDI TCU. */
 export function NovoOrcamentoModal({ open, onClose, obraId }: { open: boolean; onClose: () => void; obraId?: string | null }) {
@@ -23,6 +24,7 @@ export function NovoOrcamentoModal({ open, onClose, obraId }: { open: boolean; o
   const { organizacao } = useOrganizacao();
   const obras = useObras();
   const datas = useDatasBase();
+  const [buscarAberto, setBuscarAberto] = useState(false);
   const criar = useCriarOrcamento();
   const { register, handleSubmit, reset, watch, control, formState: { errors } } = useForm<NovoOrcamentoForm>({
     resolver: zodResolver(novoOrcamentoSchema),
@@ -76,7 +78,8 @@ export function NovoOrcamentoModal({ open, onClose, obraId }: { open: boolean; o
           {(p) => <Select {...p} {...register('obra_id')} placeholder="Selecione…" options={(obras.data ?? []).map((o) => ({ value: o.id, label: `${o.codigo ? o.codigo + ' · ' : ''}${o.nome}` }))} />}
         </Field>
         <Field label="Nome do orçamento" required error={errors.nome?.message}>{(p) => <Input {...p} {...register('nome')} data-autofocus />}</Field>
-        <Field label="Data-base de preços" required error={errors.data_base_id?.message} hint="Define UF, mês de referência e regime (desonerado ou não).">
+        <Field label="Data-base de preços" required error={errors.data_base_id?.message} hint="Define UF, mês de referência e regime (desonerado ou não)."
+          labelAside={<Button variant="link" size="sm" onClick={() => setBuscarAberto(true)}>Não achou sua UF ou mês? Buscar na Caixa</Button>}>
           {(p) => (
             <Controller
               control={control}
@@ -88,6 +91,7 @@ export function NovoOrcamentoModal({ open, onClose, obraId }: { open: boolean; o
             />
           )}
         </Field>
+        <BuscarSinapiCaixaModal open={buscarAberto} onClose={() => setBuscarAberto(false)} ufInicial={dbSel?.uf} />
         {dbSel?.is_demo && <Alert variant="demo">Data-base com dados de exemplo — não use para propostas oficiais.</Alert>}
         <Field label="BDI inicial" hint={`BDI resultante: ${formatPercent(calcularBdi(bdi))} (ISS 0% — ajuste na aba BDI)`}>
           {(p) => (
