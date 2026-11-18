@@ -117,7 +117,7 @@ export default function OrcamentoLayout() {
         <div className="mb-3 grid grid-cols-2 overflow-hidden rounded border border-border bg-surface shadow-xs sm:grid-cols-3 lg:grid-cols-6">
           {[
             { r: 'Total sem BDI', v: formatBRL(o.total_sem_bdi) },
-            { r: 'BDI', v: <>{formatBRL(o.total_bdi)} <span className="text-xs text-fg-subtle">{formatPercent(bdiMedio)}</span></> },
+            { r: 'BDI', v: <>{formatBRL(o.total_bdi)} <span className="text-xs text-fg-subtle" title="BDI efetivo: valor do BDI ÷ total sem BDI (reflete o arredondamento por item e os BDIs diferenciados)">{formatPercent(bdiMedio)}</span></> },
             { r: 'Total com BDI', v: formatBRL(o.total), destaque: true as boolean },
             {
               r: 'Itens sem preço',

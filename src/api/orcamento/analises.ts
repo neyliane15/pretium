@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { qkOrc } from './keys';
 import { invalidarOrcamento } from './orcamentos';
-import { ok, okVoid, useOrgId } from './util';
+import { buscarTodas, ok, okVoid, useOrgId } from './util';
 import type {
   Cronograma, CronogramaPeriodicidade, DashboardResumo, EncargosSociais, Honorario, HonorarioDisciplina, Json, Medicao, MedicaoItem,
   MedicaoStatus, OrcamentoEquipe, OrcamentoEquipeMembro, TablesInsert, TablesUpdate,
@@ -18,7 +18,7 @@ export function useCurvaAbcServicos(orcamentoId: string | undefined) {
   return useQuery({
     queryKey: qkOrc.curvaAbcServicos(orcamentoId ?? ''),
     enabled: Boolean(orcamentoId),
-    queryFn: async () => ok(await supabase.rpc('fn_curva_abc_servicos', { p_orcamento_id: orcamentoId! })) ?? [],
+    queryFn: () => buscarTodas((de, ate) => supabase.rpc('fn_curva_abc_servicos', { p_orcamento_id: orcamentoId! }).range(de, ate)),
   });
 }
 
@@ -26,7 +26,7 @@ export function useCurvaAbcInsumos(orcamentoId: string | undefined) {
   return useQuery({
     queryKey: qkOrc.curvaAbcInsumos(orcamentoId ?? ''),
     enabled: Boolean(orcamentoId),
-    queryFn: async () => ok(await supabase.rpc('fn_curva_abc_insumos', { p_orcamento_id: orcamentoId! })) ?? [],
+    queryFn: () => buscarTodas((de, ate) => supabase.rpc('fn_curva_abc_insumos', { p_orcamento_id: orcamentoId! }).range(de, ate)),
   });
 }
 
@@ -44,7 +44,10 @@ export function useCronograma(orcamentoId: string | undefined) {
     queryFn: async (): Promise<CronogramaCompleto> => {
       const c = ok(await supabase.from('cronogramas').select('*').eq('orcamento_id', orcamentoId!).maybeSingle()) as Cronograma | null;
       if (!c) return { cronograma: null, distribuicoes: [] };
-      const d = ok(await supabase.from('cronograma_distribuicoes').select('etapa_id, periodo, percentual').eq('cronograma_id', c.id));
+      const d = await buscarTodas((de, ate) =>
+        supabase.from('cronograma_distribuicoes').select('etapa_id, periodo, percentual').eq('cronograma_id', c.id)
+          .order('etapa_id').order('periodo').range(de, ate),
+      );
       return { cronograma: c, distribuicoes: d };
     },
   });
@@ -54,7 +57,7 @@ export function useCronogramaFisicoFinanceiro(orcamentoId: string | undefined, h
   return useQuery({
     queryKey: [...qkOrc.cronograma(orcamentoId ?? ''), 'ff'] as const,
     enabled: Boolean(orcamentoId) && habilitado,
-    queryFn: async () => ok(await supabase.rpc('fn_cronograma_fisico_financeiro', { p_orcamento_id: orcamentoId! })) ?? [],
+    queryFn: () => buscarTodas((de, ate) => supabase.rpc('fn_cronograma_fisico_financeiro', { p_orcamento_id: orcamentoId! }).range(de, ate)),
   });
 }
 
@@ -103,7 +106,7 @@ export function useMedicaoResumo(medicaoId: string | undefined) {
   return useQuery({
     queryKey: [...qkOrc.medicao(medicaoId ?? ''), 'resumo'] as const,
     enabled: Boolean(medicaoId),
-    queryFn: async () => ok(await supabase.rpc('fn_medicao_resumo', { p_medicao_id: medicaoId! })) ?? [],
+    queryFn: () => buscarTodas((de, ate) => supabase.rpc('fn_medicao_resumo', { p_medicao_id: medicaoId! }).range(de, ate)),
   });
 }
 
@@ -111,7 +114,8 @@ export function useMedicaoItens(medicaoId: string | undefined) {
   return useQuery({
     queryKey: [...qkOrc.medicao(medicaoId ?? ''), 'itens'] as const,
     enabled: Boolean(medicaoId),
-    queryFn: async (): Promise<MedicaoItem[]> => ok(await supabase.from('medicao_itens').select('*').eq('medicao_id', medicaoId!)),
+    queryFn: (): Promise<MedicaoItem[]> =>
+      buscarTodas((de, ate) => supabase.from('medicao_itens').select('*').eq('medicao_id', medicaoId!).order('id').range(de, ate)),
   });
 }
 
@@ -196,7 +200,7 @@ export function useMaoObraResumo(orcamentoId: string | undefined) {
   return useQuery({
     queryKey: [...qkOrc.maoObra(orcamentoId ?? ''), 'resumo'] as const,
     enabled: Boolean(orcamentoId),
-    queryFn: async () => ok(await supabase.rpc('fn_mao_obra_resumo', { p_orcamento_id: orcamentoId! })) ?? [],
+    queryFn: () => buscarTodas((de, ate) => supabase.rpc('fn_mao_obra_resumo', { p_orcamento_id: orcamentoId! }).range(de, ate)),
   });
 }
 
@@ -204,7 +208,7 @@ export function useMaoObraHoras(orcamentoId: string | undefined) {
   return useQuery({
     queryKey: [...qkOrc.maoObra(orcamentoId ?? ''), 'horas'] as const,
     enabled: Boolean(orcamentoId),
-    queryFn: async () => ok(await supabase.rpc('fn_mao_obra_horas_orcamento', { p_orcamento_id: orcamentoId! })) ?? [],
+    queryFn: () => buscarTodas((de, ate) => supabase.rpc('fn_mao_obra_horas_orcamento', { p_orcamento_id: orcamentoId! }).range(de, ate)),
   });
 }
 

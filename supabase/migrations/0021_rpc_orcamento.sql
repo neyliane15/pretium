@@ -375,7 +375,6 @@ declare
   m_item  jsonb;
   m_eq    jsonb;
   v_cron  uuid;
-  v_nivel integer;
 begin
   v := fn_orc_assert_editar_orcamento(p_orcamento_id);
 

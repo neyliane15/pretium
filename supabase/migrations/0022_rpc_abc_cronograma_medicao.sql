@@ -164,10 +164,9 @@ create or replace function fn_cronograma_salvar(p_orcamento_id uuid, p_data_inic
                                                 p_num_periodos smallint, p_distribuicoes jsonb)
 returns uuid language plpgsql security definer set search_path = public as $$
 declare
-  v orcamentos;
   v_id uuid;
 begin
-  v := fn_orc_assert_editar_orcamento(p_orcamento_id);
+  perform fn_orc_assert_editar_orcamento(p_orcamento_id);
   if p_data_inicio is null then
     raise exception 'Informe a data de início.' using errcode = 'P0001';
   end if;

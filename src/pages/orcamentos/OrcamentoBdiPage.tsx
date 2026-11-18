@@ -13,19 +13,19 @@ import { formatNumero, formatPercent } from '@/lib/format';
 import { mensagemErro } from '@/lib/supabase';
 import type { OrcamentoBdi } from '@/types/database';
 
-const CAMPOS: { k: keyof BdiParametros; rotulo: string; sigla: string; faixa?: (t: TipoObraTcu) => FaixaTcu }[] = [
-  { k: 'ac', sigla: 'AC', rotulo: 'Administração central', faixa: (t) => FAIXAS_TCU[t].ac },
+const CAMPOS: { k: keyof BdiParametros; rotulo: string; curto?: string; sigla: string; faixa?: (t: TipoObraTcu) => FaixaTcu }[] = [
+  { k: 'ac', sigla: 'AC', rotulo: 'Administração central', curto: 'Adm. central', faixa: (t) => FAIXAS_TCU[t].ac },
   { k: 's', sigla: 'S', rotulo: 'Seguros' },
   { k: 'g', sigla: 'G', rotulo: 'Garantias' },
   { k: 'r', sigla: 'R', rotulo: 'Riscos', faixa: (t) => FAIXAS_TCU[t].r },
-  { k: 'df', sigla: 'DF', rotulo: 'Despesas financeiras', faixa: (t) => FAIXAS_TCU[t].df },
+  { k: 'df', sigla: 'DF', rotulo: 'Despesas financeiras', curto: 'Desp. financeiras', faixa: (t) => FAIXAS_TCU[t].df },
   { k: 'l', sigla: 'L', rotulo: 'Lucro', faixa: (t) => FAIXAS_TCU[t].l },
 ];
 const TRIB: { k: keyof BdiParametros; sigla: string; rotulo: string }[] = [
   { k: 'pis', sigla: 'PIS', rotulo: 'PIS' },
   { k: 'cofins', sigla: 'COFINS', rotulo: 'COFINS' },
   { k: 'iss', sigla: 'ISS', rotulo: 'ISS efetivo' },
-  { k: 'cprb', sigla: 'CPRB', rotulo: 'CPRB (desonerado)' },
+  { k: 'cprb', sigla: 'CPRB', rotulo: 'CPRB' },
 ];
 
 const params = (b: OrcamentoBdi): BdiParametros => ({ ac: b.ac, s: b.s, r: b.r, g: b.g, df: b.df, l: b.l, pis: b.pis, cofins: b.cofins, iss: b.iss, cprb: b.cprb });
@@ -166,7 +166,7 @@ export default function OrcamentoBdiPage() {
               {CAMPOS.map((c) => {
                 const faixa = c.faixa?.(tipo) ?? (c.k === 's' || c.k === 'g' ? { min: FAIXAS_TCU[tipo].sg.min / 2, medio: FAIXAS_TCU[tipo].sg.medio / 2, max: FAIXAS_TCU[tipo].sg.max / 2 } : undefined);
                 return (
-                  <Field key={c.k} label={<><span className="font-mono text-fg">{c.sigla}</span> · {c.rotulo}</>} hint={faixa && `TCU ${formatNumero(faixa.min)} – ${formatNumero(faixa.max)}`}>
+                  <Field key={c.k} label={<span className="whitespace-nowrap" title={c.rotulo}><span className="font-mono text-fg">{c.sigla}</span> · {c.curto ? <><span aria-hidden>{c.curto}</span><span className="sr-only">{c.rotulo}</span></> : c.rotulo}</span>} hint={faixa && `TCU ${formatNumero(faixa.min)} – ${formatNumero(faixa.max)}`}>
                     {(p) => (
                       <div>
                         <NumberInput {...p} size="sm" decimals={2} min={0} value={form[c.k]} readOnly={!editavel} onChange={(v) => set(c.k, v)} suffix="%" />
@@ -184,7 +184,7 @@ export default function OrcamentoBdiPage() {
             <Rotulo>Tributos sobre o preço (I)</Rotulo>
             <div className="mt-2 grid grid-cols-2 gap-x-5 gap-y-3 md:grid-cols-4">
               {TRIB.map((c) => (
-                <Field key={c.k} label={c.rotulo} hint={c.k === 'cprb' && !desonerado ? 'Somente no regime desonerado' : c.k === 'cprb' ? 'Alíquota vigente (Lei 14.973/2024)' : undefined}>
+                <Field key={c.k} label={c.rotulo} hint={c.k === 'cprb' && !desonerado ? 'Só no regime desonerado' : c.k === 'cprb' ? 'Alíquota vigente (Lei 14.973/2024)' : undefined}>
                   {(p) => <NumberInput {...p} size="sm" decimals={2} min={0} value={form[c.k]} readOnly={!editavel || (c.k === 'cprb' && !desonerado && form.cprb === 0)} onChange={(v) => set(c.k, v)} suffix="%" />}
                 </Field>
               ))}

@@ -18,7 +18,7 @@ import {
   useCriarOrcamento, useOrcamento, useOrcamentos, useCriarEtapa, useEtapas, useItens, useAdicionarItem, useAtualizarItem,
   useRecalcularOrcamento, useSalvarBdi, useBdis, useSalvarMemorias, useMemorias, useMemoriasOrcamento, useResumoOrcamento,
   useDuplicarOrcamento, useMoverEap, useSalvarCotacao, useCotacoes, useExcluirCotacao, useTrocarDataBase, useAlterarStatusOrcamento,
-  useExcluirItens,
+  useExcluirItens, useExcluirEtapa,
 } from '@/api/orcamento/orcamentos';
 import { useDatasBase, buscarReferencias, useComposicaoAnalitica, useComposicaoItens, useSalvarComposicaoPropria, useComposicoesProprias, useSalvarInsumoProprio, useInsumosProprios, useEncargos, useEncargosDetalhe, useDuplicarEncargos } from '@/api/orcamento/referencias';
 import {
@@ -459,6 +459,30 @@ describe('4. orçamento', () => {
     expect(d.obras_por_status.planejamento).toBe(1);
     expect(d.medido_total).toBeGreaterThan(0);
   });
+
+  it('orçamento com mais itens que max_rows do PostgREST: useItens pagina e não trunca', async () => {
+    // config.toml: [api] max_rows = 5000. Sem paginação o editor recebia só 5000 linhas.
+    const N = 5120;
+    const antes = (await consultar(() => useItens(orcId))).length;
+    const grande = (await mutar(() => useCriarEtapa(orcId), { nome: 'Volume', parentId: null, ordem: 99 })).id;
+    const linhas = Array.from({ length: N }, (_, k) => ({
+      orcamento_id: orcId, etapa_id: grande, referencia_tipo: 'livre' as const, descricao: `Item de volume ${k + 1}`,
+      unidade: 'UN', quantidade: 1, custo_unitario: 1, ordem: k + 1,
+    }));
+    for (let k = 0; k < N; k += 1000) {
+      const r = await supabase.from('orcamento_itens').insert(linhas.slice(k, k + 1000));
+      expect(r.error).toBeNull();
+    }
+    // a consulta sem range continua limitada pelo servidor (prova de que o limite existe)
+    const cru = await supabase.from('orcamento_itens').select('id').eq('orcamento_id', orcId);
+    expect(cru.data!.length).toBe(5000);
+    const todos = await consultar(() => useItens(orcId));
+    expect(todos.length).toBe(antes + N);
+    expect(new Set(todos.map((i) => i.id)).size).toBe(antes + N);
+    await mutar(() => useExcluirEtapa(orcId), grande);
+    expect((await consultar(() => useItens(orcId))).length).toBe(antes);
+    await mutar(() => useRecalcularOrcamento(orcId), undefined);
+  }, 120_000);
 });
 
 describe('5. referências próprias', () => {

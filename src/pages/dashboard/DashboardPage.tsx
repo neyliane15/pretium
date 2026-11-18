@@ -60,7 +60,13 @@ export default function DashboardPage() {
           <>
             <Stat label="Valor orçado" value={formatBRL(d.valor_orcado_total)} hint={`${d.orcamentos_total} orçamento(s)`} icon={<Calculator />} highlight />
             <Stat label="Valor aprovado" value={formatBRL(d.valor_aprovado_total)} hint={d.valor_orcado_total > 0 ? `${formatPercent((d.valor_aprovado_total / d.valor_orcado_total) * 100, 1)} do orçado` : 'Nenhum aprovado'} icon={<CheckCircle2 />} />
-            <Stat label="Medido acumulado" value={formatBRL(d.medido_total)} hint={pctMedido !== null ? `${formatPercent(pctMedido, 1)} do aprovado` : 'Sem medições'} icon={<Ruler />} />
+            <Stat label="Medido acumulado" value={formatBRL(d.medido_total)} hint={
+                pctMedido !== null
+                  ? `${formatPercent(pctMedido, 1)} do aprovado`
+                  : d.medido_total > 0 && d.valor_orcado_total > 0
+                    ? `${formatPercent((d.medido_total / d.valor_orcado_total) * 100, 1)} do orçado`
+                    : 'Sem medições'
+              } icon={<Ruler />} />
             <Stat
               label="Obras"
               value={<span>{obrasTotal}</span>}

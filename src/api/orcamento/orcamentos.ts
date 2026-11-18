@@ -5,7 +5,7 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { qkOrc } from './keys';
-import { ok, okVoid, useOrgId } from './util';
+import { buscarTodas, ok, okVoid, useOrgId } from './util';
 import type {
   BdiParametros, DataBase, ItemReferenciaTipo, Json, Orcamento, OrcamentoBdi, OrcamentoEtapa, OrcamentoInsumoPreco,
   OrcamentoItem, OrcamentoItemMemoria, OrcamentoStatus, TablesInsert, TablesUpdate,
@@ -124,8 +124,10 @@ export function useEtapas(orcamentoId: string | undefined) {
   return useQuery({
     queryKey: qkOrc.etapas(orcamentoId ?? ''),
     enabled: Boolean(orcamentoId),
-    queryFn: async (): Promise<OrcamentoEtapa[]> =>
-      ok(await supabase.from('orcamento_etapas').select('*').eq('orcamento_id', orcamentoId!).order('ordem')),
+    queryFn: (): Promise<OrcamentoEtapa[]> =>
+      buscarTodas((de, ate) =>
+        supabase.from('orcamento_etapas').select('*').eq('orcamento_id', orcamentoId!).order('ordem').order('id').range(de, ate),
+      ),
   });
 }
 
@@ -133,8 +135,11 @@ export function useItens(orcamentoId: string | undefined) {
   return useQuery({
     queryKey: qkOrc.itens(orcamentoId ?? ''),
     enabled: Boolean(orcamentoId),
-    queryFn: async (): Promise<OrcamentoItem[]> =>
-      ok(await supabase.from('orcamento_itens').select('*').eq('orcamento_id', orcamentoId!).order('ordem')),
+    // Paginado: orçamentos grandes passam de `max_rows` do PostgREST (ver `buscarTodas`).
+    queryFn: (): Promise<OrcamentoItem[]> =>
+      buscarTodas((de, ate) =>
+        supabase.from('orcamento_itens').select('*').eq('orcamento_id', orcamentoId!).order('ordem').order('id').range(de, ate),
+      ),
   });
 }
 
@@ -143,7 +148,7 @@ export function useResumoOrcamento(orcamentoId: string | undefined) {
     queryKey: qkOrc.resumo(orcamentoId ?? ''),
     enabled: Boolean(orcamentoId),
     queryFn: async () => {
-      const r = ok(await supabase.rpc('fn_orcamento_resumo', { p_orcamento_id: orcamentoId! })) ?? [];
+      const r = await buscarTodas((de, ate) => supabase.rpc('fn_orcamento_resumo', { p_orcamento_id: orcamentoId! }).range(de, ate));
       return [...r].sort((a, b) => a.ordem_path.localeCompare(b.ordem_path, 'pt-BR', { numeric: true }));
     },
   });

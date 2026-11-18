@@ -21,3 +21,28 @@ export function okVoid(r: { error: unknown }): void {
 export function useOrgId(): string {
   return useOrganizacao().organizacao?.id ?? '';
 }
+
+/**
+ * Tamanho do lote de paginação. O PostgREST corta cada resposta em `max_rows` (padrão do Supabase
+ * Cloud: 1000; `supabase/config.toml`: 5000), então o lote não pode ser maior que esse limite.
+ */
+export const TAMANHO_LOTE = 1000;
+
+/**
+ * Busca **todas** as linhas de uma consulta paginando por `range` (Range/offset do PostgREST) em
+ * lotes de `tamanho` até receber um lote incompleto. Sem isso, um orçamento grande (mais de
+ * `max_rows` itens, ou cronograma com etapas × períodos acima do limite) viria truncado em silêncio.
+ * A consulta precisa ter ordenação total (ex.: `.order('ordem').order('id')`) para as páginas não
+ * se sobreporem; RPCs que retornam conjunto mantêm a ordem do próprio `order by` interno.
+ */
+export async function buscarTodas<T>(
+  pagina: (de: number, ate: number) => PromiseLike<Resposta<T[]>>,
+  tamanho = TAMANHO_LOTE,
+): Promise<T[]> {
+  const todas: T[] = [];
+  for (let de = 0; ; de += tamanho) {
+    const lote = (ok(await pagina(de, de + tamanho - 1)) ?? []) as T[];
+    todas.push(...lote);
+    if (lote.length < tamanho) return todas;
+  }
+}

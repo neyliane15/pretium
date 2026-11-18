@@ -48,12 +48,56 @@ export default function MedicaoDetalhePage() {
     return r.filter((l) => (!soMedidos || l.quantidade_atual > 0) && (!t || semAcento(`${l.codigo} ${l.descricao}`).includes(t)));
   }, [resumo.data, local, filtro, soMedidos]);
 
+  /**
+   * Linhas da planilha na ordem da EAP (mesma do orçamento analítico): itens pelo código hierárquico
+   * e, antes de cada um, os cabeçalhos das etapas ancestrais ainda não exibidas. Assim a subetapa
+   * "2.1" vem antes do item "2.2" da etapa "2" (numeração §8.9: subetapas primeiro).
+   */
   const grupos = useMemo(() => {
     const eap = montarEap(etapas.data ?? [], []);
-    const porEtapa = new Map<string, MedicaoResumoLinha[]>();
-    for (const l of linhas) porEtapa.set(l.etapa_id, [...(porEtapa.get(l.etapa_id) ?? []), l]);
-    return eap.linhas.filter((e) => porEtapa.has(e.id)).map((e) => ({ id: e.id, codigo: e.codigo, nome: e.tipo === 'etapa' ? e.etapa.nome : '', itens: porEtapa.get(e.id)! }));
+    const info = new Map(eap.linhas.flatMap((e) => (e.tipo === 'etapa' ? [[e.id, e] as const] : [])));
+    const pai = new Map((etapas.data ?? []).map((e) => [e.id, e.parent_id]));
+    const saida: ({ tipo: 'etapa'; id: string; codigo: string; nome: string; nivel: number } | { tipo: 'item'; l: MedicaoResumoLinha; nivel: number })[] = [];
+    const emitidas = new Set<string>();
+    const ordenadas = [...linhas].sort((a, b) => a.codigo.localeCompare(b.codigo, 'pt-BR', { numeric: true }));
+    for (const l of ordenadas) {
+      const cadeia: string[] = [];
+      for (let e: string | null | undefined = l.etapa_id; e; e = pai.get(e)) cadeia.unshift(e);
+      for (const e of cadeia) {
+        if (emitidas.has(e)) continue;
+        emitidas.add(e);
+        const x = info.get(e);
+        saida.push({ tipo: 'etapa', id: e, codigo: x?.codigo ?? '', nome: x?.etapa.nome ?? '', nivel: x?.nivel ?? 1 });
+      }
+      saida.push({ tipo: 'item', l, nivel: (info.get(l.etapa_id)?.nivel ?? 1) + 1 });
+    }
+    return saida;
   }, [etapas.data, linhas]);
+
+  // função de renderização (não componente): manter a identidade do <NumberInput> entre renders
+  const linhaMedicao = (l: MedicaoResumoLinha, nivel: number) => (
+    <Tr>
+      <Td mono muted>{l.codigo}</Td>
+      <Td truncate title={l.descricao} style={{ paddingLeft: 8 + (nivel - 1) * 12 }}>{l.descricao}</Td>
+      <Td muted className="text-xs">{l.unidade}</Td>
+      <Td numeric>{formatMoeda(l.preco_unitario)}</Td>
+      <Td numeric muted>{formatQuantidade(l.quantidade_orcada)}</Td>
+      <Td numeric muted>{formatMoeda(l.valor_orcado)}</Td>
+      <Td numeric>{formatQuantidade(l.quantidade_anterior)}</Td>
+      <Td numeric className={cn('px-0.5', l.quantidade_atual > 0 && 'bg-primary-soft/50')}>
+        {editavel ? (
+          <NumberInput size="sm" aria-label={`Quantidade medida do item ${l.codigo}`} className="!h-5 border-transparent bg-transparent px-1 shadow-none hover:border-border-strong focus:bg-surface" decimals={4} min={0} value={l.quantidade_atual || null} onChange={(v) => onQtd(l, v)} />
+        ) : (
+          formatQuantidade(l.quantidade_atual)
+        )}
+      </Td>
+      <Td numeric className={cn(l.quantidade_saldo < 0 && 'text-danger')}>{formatQuantidade(l.quantidade_saldo)}</Td>
+      <Td numeric className="font-medium">{formatMoeda(l.valor_atual)}</Td>
+      <Td numeric>{formatMoeda(l.valor_acumulado)}</Td>
+      <Td numeric muted>{formatMoeda(l.valor_saldo)}</Td>
+      <Td><span className="flex items-center gap-1.5"><BarraPercentual valor={l.percentual_acumulado} cor={l.percentual_acumulado >= 99.995 ? 'bg-success' : 'bg-brand'} /><span className="num w-9 text-right text-2xs">{formatNumero(l.percentual_acumulado, 0)}%</span></span></Td>
+    </Tr>
+  );
 
   if (med.isLoading || resumo.isLoading) return <LoadingBlock label="Carregando boletim…" />;
   if (med.isError || !med.data) return <ErroCarregamento erro={med.error} />;
@@ -116,7 +160,7 @@ export default function MedicaoDetalhePage() {
           <THead>
             <Tr>
               <Th rowSpan={2} width={64}>Item</Th>
-              <Th rowSpan={2}>Descrição</Th>
+              <Th rowSpan={2} className="min-w-[220px]">Descrição</Th>
               <Th rowSpan={2} width={40}>Und</Th>
               <Th rowSpan={2} numeric width={84}>Preço unit.</Th>
               <Th colSpan={2} className="text-center">Orçado</Th>
@@ -131,34 +175,16 @@ export default function MedicaoDetalhePage() {
             </Tr>
           </THead>
           <TBody>
-            {grupos.map((g) => (
-              <Fragment key={g.id}>
-                <Tr group={1}><Td mono>{g.codigo}</Td><Td colSpan={12} className="uppercase">{g.nome}</Td></Tr>
-                {g.itens.map((l) => (
-                  <Tr key={l.item_id}>
-                    <Td mono muted>{l.codigo}</Td>
-                    <Td truncate title={l.descricao}>{l.descricao}</Td>
-                    <Td muted className="text-xs">{l.unidade}</Td>
-                    <Td numeric>{formatMoeda(l.preco_unitario)}</Td>
-                    <Td numeric muted>{formatQuantidade(l.quantidade_orcada)}</Td>
-                    <Td numeric muted>{formatMoeda(l.valor_orcado)}</Td>
-                    <Td numeric>{formatQuantidade(l.quantidade_anterior)}</Td>
-                    <Td numeric className={cn('px-0.5', l.quantidade_atual > 0 && 'bg-primary-soft/50')}>
-                      {editavel ? (
-                        <NumberInput size="sm" aria-label={`Quantidade medida do item ${l.codigo}`} className="!h-5 border-transparent bg-transparent px-1 shadow-none hover:border-border-strong focus:bg-surface" decimals={4} min={0} value={l.quantidade_atual || null} onChange={(v) => onQtd(l, v)} />
-                      ) : (
-                        formatQuantidade(l.quantidade_atual)
-                      )}
-                    </Td>
-                    <Td numeric className={cn(l.quantidade_saldo < 0 && 'text-danger')}>{formatQuantidade(l.quantidade_saldo)}</Td>
-                    <Td numeric className="font-medium">{formatMoeda(l.valor_atual)}</Td>
-                    <Td numeric>{formatMoeda(l.valor_acumulado)}</Td>
-                    <Td numeric muted>{formatMoeda(l.valor_saldo)}</Td>
-                    <Td><span className="flex items-center gap-1.5"><BarraPercentual valor={l.percentual_acumulado} cor={l.percentual_acumulado >= 99.995 ? 'bg-success' : 'bg-brand'} /><span className="num w-9 text-right text-2xs">{formatNumero(l.percentual_acumulado, 0)}%</span></span></Td>
-                  </Tr>
-                ))}
-              </Fragment>
-            ))}
+            {grupos.map((g) =>
+              g.tipo === 'etapa' ? (
+                <Tr key={g.id} group={g.nivel === 1 ? 1 : 2}>
+                  <Td mono>{g.codigo}</Td>
+                  <Td colSpan={12} className={g.nivel === 1 ? 'uppercase' : undefined} style={{ paddingLeft: 8 + (g.nivel - 1) * 12 }}>{g.nome}</Td>
+                </Tr>
+              ) : (
+                <Fragment key={g.l.item_id}>{linhaMedicao(g.l, g.nivel)}</Fragment>
+              ),
+            )}
           </TBody>
           <TFoot>
             <Tr>

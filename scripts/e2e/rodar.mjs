@@ -321,20 +321,23 @@ for (const esquema of ['light', 'dark']) {
   await estabilizar(page);
   const alvo = (await c.from('orcamento_itens').select('id, codigo, quantidade, total').eq('orcamento_id', orcId).eq('usa_memoria', false).gt('quantidade', 0).order('codigo').limit(1).single()).data;
   const campo = page.getByLabel(`Quantidade do item ${alvo.codigo}`);
+  // Uma única tentativa, logo que o campo aparece (sem espera artificial): o Enter grava e move o
+  // foco para a linha seguinte. Antes da correção do NumberInput, o blur dessa troca de foco
+  // reenviava o valor ANTIGO e desfazia a edição (instabilidade relatada na 1ª rodada).
+  await campo.waitFor({ state: 'visible' });
+  await campo.click();
+  await campo.fill('');
+  await campo.pressSequentially('12,5');
+  await campo.press('Enter');
   let gravado = null;
-  for (let tentativa = 0; tentativa < 2 && Number(gravado?.quantidade) !== 12.5; tentativa++) {
-    await campo.waitFor({ state: 'visible' });
-    await page.waitForTimeout(500);
-    await campo.click();
-    await campo.fill('');
-    await campo.pressSequentially('12,5');
-    await campo.press('Enter');
-    for (let i = 0; i < 40 && Number(gravado?.quantidade) !== 12.5; i++) {
-      await page.waitForTimeout(250);
-      gravado = (await c.from('orcamento_itens').select('quantidade, total, preco_unitario').eq('id', alvo.id).single()).data;
-    }
-    if (tentativa === 0 && Number(gravado?.quantidade) !== 12.5) relatorio.interacoes.push({ nome: `${ref.atual} (1ª tentativa falhou)`, ok: false, escritas: [...escritas], valorCampo: await campo.inputValue().catch(() => null) });
+  for (let i = 0; i < 40 && Number(gravado?.quantidade) !== 12.5; i++) {
+    await page.waitForTimeout(250);
+    gravado = (await c.from('orcamento_itens').select('quantidade, total, preco_unitario').eq('id', alvo.id).single()).data;
   }
+  await page.waitForTimeout(1500); // nenhuma escrita posterior pode desfazer o valor
+  gravado = (await c.from('orcamento_itens').select('quantidade, total, preco_unitario').eq('id', alvo.id).single()).data;
+  const patchesQtd = escritas.filter((e) => e.startsWith('PATCH /rest/v1/orcamento_itens'));
+  if (patchesQtd.length !== 1) problema(ref.atual, 'interacao', `esperado 1 PATCH da quantidade, houve ${patchesQtd.length}: ${patchesQtd.join(' | ')}`);
   await page.waitForTimeout(1200); // recálculo consolidado (debounce 600 ms)
   const orcDepois = (await c.from('orcamentos').select('total').eq('id', orcId).single()).data;
   const okQtd = Number(gravado?.quantidade) === 12.5 && Math.abs(gravado.total - Math.round(12.5 * gravado.preco_unitario * 100) / 100) < 0.005;

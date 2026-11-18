@@ -114,8 +114,8 @@ export default function OrcamentoCurvaAbcPage() {
               title={`${filtradas.length} de ${linhas.length} ${aba === 'servicos' ? 'serviços' : 'insumos'}`}
               actions={
                 <>
-                  {aba === 'insumos' && <div className="w-40"><Select size="sm" aria-label="Tipo de insumo" value={tipo} onChange={(e) => setTipo(e.target.value as InsumoTipo | '')} placeholder="Todos os tipos" options={opcoes(LABEL_INSUMO_TIPO)} /></div>}
-                  <div className="w-36"><Select size="sm" aria-label="Classe" value={classe} onChange={(e) => setClasse(e.target.value as ClasseAbc | '')} placeholder="Todas as classes" options={[{ value: 'A', label: 'Classe A' }, { value: 'B', label: 'Classe B' }, { value: 'C', label: 'Classe C' }]} /></div>
+                  {aba === 'insumos' && <div className="w-44"><Select size="sm" aria-label="Tipo de insumo" value={tipo} onChange={(e) => setTipo(e.target.value as InsumoTipo | '')} placeholder="Todos os tipos" options={opcoes(LABEL_INSUMO_TIPO)} /></div>}
+                  <div className="w-40"><Select size="sm" aria-label="Classe" value={classe} onChange={(e) => setClasse(e.target.value as ClasseAbc | '')} placeholder="Todas as classes" options={[{ value: 'A', label: 'Classe A' }, { value: 'B', label: 'Classe B' }, { value: 'C', label: 'Classe C' }]} /></div>
                 </>
               }
             />

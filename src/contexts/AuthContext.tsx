@@ -54,10 +54,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: sub } = supabase.auth.onAuthStateChange((evento, s) => {
       setSession(s);
-      if (evento === 'SIGNED_IN' || evento === 'USER_UPDATED' || evento === 'SIGNED_OUT') {
-        void carregarPerfil(s?.user.id);
-      }
-      if (evento === 'SIGNED_IN') void supabase.rpc('registrar_acesso');
+      // O callback roda com o lock do supabase-auth adquirido: chamar o Supabase aqui dentro trava
+      // a requisição no navegador (o `registrar_acesso` nunca era enviado). Adia para depois do
+      // callback, como recomenda a documentação do supabase-js.
+      window.setTimeout(() => {
+        if (!ativo) return;
+        if (evento === 'SIGNED_IN' || evento === 'USER_UPDATED' || evento === 'SIGNED_OUT') {
+          void carregarPerfil(s?.user.id);
+        }
+        if (evento === 'SIGNED_IN') void supabase.rpc('registrar_acesso');
+      }, 0);
     });
     return () => {
       ativo = false;
