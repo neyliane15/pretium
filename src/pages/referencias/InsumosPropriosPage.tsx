@@ -42,8 +42,8 @@ export default function InsumosPropriosPage() {
   }, [q.data, busca, tipo]);
 
   const enviar = handleSubmit(async (v) => {
-    const d = insumoProprioSchema.parse(v);
     try {
+      const d = insumoProprioSchema.parse(v);
       await salvar.mutateAsync({ ...d, id: form && form !== 'novo' ? form.id : undefined });
       toast.success('Insumo salvo', d.descricao);
       setForm(null);

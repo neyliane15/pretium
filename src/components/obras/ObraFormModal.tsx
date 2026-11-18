@@ -43,8 +43,8 @@ export function ObraFormModal({ open, onClose, obra, onSalva }: { open: boolean;
   }, [open, obra, reset]);
 
   const enviar = handleSubmit(async (valores) => {
-    const dados: ObraDados = obraSchema.parse(valores);
     try {
+      const dados: ObraDados = obraSchema.parse(valores);
       const o = await salvar.mutateAsync({ ...dados, id: obra?.id });
       toast.success(obra ? 'Obra atualizada' : 'Obra cadastrada', o.nome);
       onSalva?.(o);

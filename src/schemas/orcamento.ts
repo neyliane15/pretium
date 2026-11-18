@@ -2,7 +2,8 @@
 import { z } from 'zod';
 import { UFS } from '@/lib/labels';
 
-const textoOpc = z.string().trim().max(500).optional().transform((v) => (v ? v : null));
+/** Texto opcional: '' → null. Aceita null/undefined para ser idempotente (o valor já validado pode ser validado de novo). */
+const textoOpc = z.string().trim().max(500).nullish().transform((v) => (v ? v : null));
 const numOpc = z.number({ invalid_type_error: 'Informe um número' }).nonnegative('Não pode ser negativo').nullable();
 const dataOpc = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida').nullable();
 
@@ -28,7 +29,7 @@ export const obraSchema = z
     responsavel_tecnico: textoOpc,
     crea_cau: textoOpc,
     art_rrt: textoOpc,
-    observacoes: z.string().trim().max(4000).optional().transform((v) => (v ? v : null)),
+    observacoes: z.string().trim().max(4000).nullish().transform((v) => (v ? v : null)),
   })
   .refine((o) => !o.data_inicio_prevista || !o.data_fim_prevista || o.data_fim_prevista >= o.data_inicio_prevista, {
     message: 'O término deve ser posterior ao início',
