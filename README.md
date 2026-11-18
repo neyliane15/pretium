@@ -111,6 +111,13 @@ de arquivos passa a falhar).
 6. Anote em *Project Settings → API* a **Project URL** e a chave **anon public** (ou *publishable*).
    Nunca use a `service_role`/*secret* no front.
 
+### Alternativa sem terminal: SQL Editor
+
+Em vez de `supabase link` + `db push`, abra o projeto no painel → **SQL Editor** e rode, um por
+vez e nesta ordem, os arquivos de [`supabase/instalacao/`](supabase/instalacao/LEIA-ME.md):
+`01_nucleo.sql`, `02_sinapi_orcamento.sql`, `03_funcoes.sql`, `04_dados_exemplo_opcional.sql`
+(opcional) e `05_definir_admin.sql` (com o seu e-mail). Use um caminho **ou** o outro, não os dois.
+
 ### 2. Front (build estático)
 
 Variáveis de ambiente (lidas **no build** pelo Vite):
