@@ -3,7 +3,8 @@
 -- Contrato: docs/ARQUITETURA.md §6.2 — assinaturas ESTÁVEIS (usadas pelo B2).
 --
 -- Todas: stable, security definer, search_path vazio, nomes qualificados.
--- Usuário pending/blocked ⇒ todas retornam false/null.
+-- Booleanas NUNCA retornam null (seguro em `if not ...` de plpgsql).
+-- Usuário pending/blocked ⇒ false (org_papel ⇒ null).
 -- Organização 'bloqueada' ⇒ membros não-admin perdem edição (leitura continua).
 -- ============================================================================
 
@@ -56,8 +57,8 @@ stable
 security definer
 set search_path = ''
 as $$
-  select public.is_admin()
-      or (p_organizacao_id is not null and public.org_papel(p_organizacao_id) is not null);
+  select coalesce(public.is_admin()
+      or (p_organizacao_id is not null and public.org_papel(p_organizacao_id) is not null), false);
 $$;
 
 create or replace function public.can_edit_org(p_organizacao_id uuid)
@@ -67,12 +68,12 @@ stable
 security definer
 set search_path = ''
 as $$
-  select public.is_admin()
+  select coalesce(public.is_admin()
       or (
         p_organizacao_id is not null
-        and public.org_papel(p_organizacao_id) in ('owner', 'editor')
+        and coalesce(public.org_papel(p_organizacao_id) in ('owner', 'editor'), false)
         and exists (select 1 from public.organizacoes o where o.id = p_organizacao_id and o.status = 'ativa')
-      );
+      ), false);
 $$;
 
 create or replace function public.is_org_owner(p_organizacao_id uuid)
@@ -82,12 +83,12 @@ stable
 security definer
 set search_path = ''
 as $$
-  select public.is_admin()
+  select coalesce(public.is_admin()
       or (
         p_organizacao_id is not null
-        and public.org_papel(p_organizacao_id) = 'owner'
+        and coalesce(public.org_papel(p_organizacao_id) = 'owner', false)
         and exists (select 1 from public.organizacoes o where o.id = p_organizacao_id and o.status = 'ativa')
-      );
+      ), false);
 $$;
 
 create or replace function public.assert_pode_editar(p_organizacao_id uuid)
