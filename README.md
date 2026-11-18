@@ -20,6 +20,7 @@ RPC, Storage) · Vitest + Testing Library.
 | [`docs/DESIGN.md`](docs/DESIGN.md) | tokens de cor (claro/escuro), tipografia, componentes, acessibilidade |
 | [`docs/DIVISAO_TRABALHO.md`](docs/DIVISAO_TRABALHO.md) | responsabilidades e propriedade de arquivos por agente |
 | [`docs/CONTRATO_ALTERACOES.md`](docs/CONTRATO_ALTERACOES.md) | registro de mudanças de contrato |
+| [`docs/RELATORIO_TESTES.md`](docs/RELATORIO_TESTES.md) | ambiente, cobertura e resultados dos testes |
 
 ## Requisitos
 
@@ -77,10 +78,27 @@ mensais da Caixa (SINAPI, UF RJ, desonerado e não desonerado) e as carrega em
 | `npm run build` | checagem de tipos + build de produção em `dist/` |
 | `npm run preview` | serve o build |
 | `npm run typecheck` | `tsc -b` |
-| `npm test` | testes (vitest) |
+| `npm test` | testes unitários e de componente (vitest + Testing Library) |
+| `npm run test:db` | suítes SQL (RLS, RPCs, cálculo, importação) em Postgres WASM (PGlite) — não precisa de Docker |
+| `npm run test:db:pg` | as mesmas suítes num Postgres real via `psql` (padrão: o do `supabase start`, porta 54322) |
+| `npm run test:contrato` | verificador estático: toda chamada `from/select/rpc/storage` de `src/` × catálogo do banco migrado |
+| `npm run test:integracao` | hooks reais de `src/api` contra o Supabase local (GoTrue + PostgREST + Storage); `-- --reset` faz `supabase db reset` antes |
+| `npm run test:e2e` | Playwright (Chromium) no build de produção contra o Supabase local; screenshots em `test-results/e2e/` |
+| `npm run test:all` | tudo acima (os passos que dependem do Supabase local/psql/Playwright são pulados com aviso se indisponíveis) |
 | `npm run lint` | ESLint |
 | `npm run types:gen` | gera `src/types/database.generated.ts` a partir do banco local (conferência) |
 | `npm run db:start` / `db:reset` | atalhos do Supabase CLI |
+
+### Testes contra o Supabase local
+
+```bash
+supabase start -x studio,imgproxy,edge-runtime,logflare,vector,postgres-meta,supavisor
+npm run test:integracao -- --reset   # aplica migrações + seed e roda os fluxos ponta a ponta
+npm run test:e2e
+```
+
+Sem acesso ao registro ECR da AWS, use as imagens do Docker Hub: `SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io supabase start …`.
+Relatório da última rodada: [`docs/RELATORIO_TESTES.md`](docs/RELATORIO_TESTES.md).
 
 ## Estrutura
 
@@ -98,7 +116,7 @@ src/
   pages/                telas por módulo
   types/                tipos do banco (contrato com as migrações)
 supabase/
-  migrations/           0001–0009 núcleo · 0010–0029 SINAPI/orçamento
+  migrations/           0001–0009 núcleo · 0010–0029 SINAPI/orçamento · 0030+ correções (TESTES)
   seed.sql              dados de demonstração
   config.toml
 docs/

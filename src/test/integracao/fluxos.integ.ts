@@ -6,11 +6,13 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/lib/supabase';
 import { calcularBdi, calcularItem, totalizarOrcamento, quantidadeDaMemoria, valorDisciplina, totalHonorarios } from '@/lib/calc';
-import { useCriarOrganizacao, useConvidarMembro, useConvites, useMeusConvites, useAceitarConvite, useMembros, useSalvarOrganizacao, useAlterarPapelMembro } from '@/api/core/organizacao';
-import { useAdminUsuarios, useDefinirStatusUsuario, useAdminOrganizacoes, useAdminEstatisticas, useAuditoria, useImportacoes, useDatasBaseAdmin } from '@/api/core/admin';
+import { useCriarOrganizacao, useConvidarMembro, useConvites, useMeusConvites, useAceitarConvite, useMembros, useSalvarOrganizacao, useAlterarPapelMembro, useRevogarConvite, useRemoverMembro } from '@/api/core/organizacao';
+import { useAtualizarPerfil } from '@/api/core/perfil';
+import { authApi } from '@/api/core/auth';
+import { useAdminUsuarios, useDefinirStatusUsuario, useDefinirStatusOrganizacao, useAdminOrganizacoes, useAdminEstatisticas, useAuditoria, useImportacoes, useDatasBaseAdmin } from '@/api/core/admin';
 import { useSalvarCliente, useClientes, useCliente, useObrasDoCliente } from '@/api/core/clientes';
 import { useSalvarObra, useObras, useObra, useClientesOpcoes } from '@/api/core/obras';
-import { useConfiguracoesPublicas, useDataBaseMaisRecente } from '@/api/core/configuracoes';
+import { useConfiguracoesPublicas, useDataBaseMaisRecente, useDefinirConfiguracao } from '@/api/core/configuracoes';
 import { executarImportacao } from '@/api/core/sinapi';
 import {
   useCriarOrcamento, useOrcamento, useOrcamentos, useCriarEtapa, useEtapas, useItens, useAdicionarItem, useAtualizarItem,
@@ -27,7 +29,7 @@ import {
 import { detectarLinhaCabecalho, detectarTipo, extrair as extrairSinapi, sugerirMapeamento, type Matriz } from '@/lib/sinapi/parser';
 import type { DataBase, Insumo, Organizacao, OrcamentoItem } from '@/types/database';
 import type { ChamadaFrom } from '../../../scripts/contrato/extrair.mjs';
-import { cadastrar, clientDe, clientServico, consultar, emailDe, entrar, estado, mutar } from './ambiente';
+import { SENHA, cadastrar, clientDe, clientServico, consultar, emailDe, entrar, estado, mutar } from './ambiente';
 
 vi.mock('@/contexts/OrganizacaoContext', async () => {
   const { estado: e } = await import('./ambiente');
@@ -645,5 +647,78 @@ describe('9. replay de TODOS os selects extraídos de src/** contra o PostgREST 
     const r = await supabase.from('orcamento_itens').select('*').eq('orcamento_id', orcId).limit(1).single();
     const it = r.data as OrcamentoItem;
     for (const k of ['quantidade', 'custo_unitario', 'preco_unitario', 'total', 'bdi_percentual'] as const) expect(typeof it[k], k).toBe('number');
+  });
+});
+
+describe('10. segurança e administração (via API real)', () => {
+  it('usuário não se promove a admin nem se ativa pelo PATCH em profiles', async () => {
+    const c = await clientDe(EMAIL.vitor);
+    await c.from('profiles').update({ papel_global: 'admin', status: 'active' }).eq('id', ID.vitor!);
+    const p = (await c.from('profiles').select('papel_global').eq('id', ID.vitor!).single()).data!;
+    expect(p.papel_global).toBe('user');
+    const outro = await c.from('profiles').update({ nome: 'hack' }).eq('id', ID.ana!).select();
+    expect(outro.data ?? []).toEqual([]);
+    const aud = await c.from('auditoria_logs').select('id').limit(1);
+    expect(aud.data ?? []).toEqual([]);
+    const ins = await c.from('auditoria_logs').insert({ acao: 'forjada', entidade: 'x' } as never);
+    expect(ins.error).not.toBeNull();
+    const reg = await c.rpc('registrar_auditoria' as never, { p_acao: 'x', p_entidade: 'y' } as never);
+    expect(reg.error).not.toBeNull();
+  });
+
+  it('perfil: o próprio usuário atualiza nome/telefone/tema pelo hook', async () => {
+    await entrar(EMAIL.vitor);
+    await mutar(() => useAtualizarPerfil(), { nome: 'Vitor Visualizador', telefone: '21999990000', tema: 'dark' });
+    const p = (await supabase.from('profiles').select('nome, telefone, tema').eq('id', ID.vitor!).single()).data;
+    expect(p).toEqual({ nome: 'Vitor Visualizador', telefone: '21999990000', tema: 'dark' });
+    expect((await supabase.rpc('registrar_acesso')).error).toBeNull();
+  });
+
+  it('cadastro fechado: GoTrue recusa e o front mostra mensagem em português', async () => {
+    await entrar(EMAIL.admin);
+    await mutar(() => useDefinirConfiguracao(), { chave: 'cadastro_aberto', valor: false });
+    try {
+      await expect(authApi.cadastrar('Estranho', emailDe('estranho'), SENHA)).rejects.toThrow(/cadastro .*fechado|convite/i);
+      // convidado (convite pendente) consegue se cadastrar mesmo com o cadastro fechado
+      await entrar(EMAIL.ana, orgA, 'owner');
+      await mutar(() => useConvidarMembro(), { email: emailDe('convidado'), papel: 'viewer' });
+      await expect(cadastrar('convidado')).resolves.toMatch(/[0-9a-f-]{36}/);
+    } finally {
+      await entrar(EMAIL.admin);
+      await mutar(() => useDefinirConfiguracao(), { chave: 'cadastro_aberto', valor: true });
+    }
+  });
+
+  it('bloqueio de usuário corta o acesso aos dados mesmo com sessão aberta', async () => {
+    const v = await clientDe(EMAIL.vitor);
+    expect((await v.from('orcamentos').select('id').eq('id', orcId)).data).toHaveLength(1);
+    await entrar(EMAIL.admin);
+    await mutar(() => useDefinirStatusUsuario(), { userId: ID.vitor!, status: 'blocked', motivo: 'teste' });
+    expect((await v.from('orcamentos').select('id').eq('id', orcId)).data ?? []).toEqual([]);
+    const p = (await v.from('profiles').select('status, motivo_bloqueio').eq('id', ID.vitor!).single()).data;
+    expect(p).toEqual({ status: 'blocked', motivo_bloqueio: 'teste' });
+    await mutar(() => useDefinirStatusUsuario(), { userId: ID.vitor!, status: 'active' });
+    expect((await v.from('orcamentos').select('id').eq('id', orcId)).data).toHaveLength(1);
+  });
+
+  it('organização bloqueada fica somente leitura; owner remove membro e revoga convite', async () => {
+    await entrar(EMAIL.admin);
+    await mutar(() => useDefinirStatusOrganizacao(), { orgId: orgA.id, status: 'bloqueada' });
+    try {
+      const b = await clientDe(EMAIL.bruno);
+      expect((await b.from('obras').select('id').eq('id', ID.obra!)).data).toHaveLength(1);
+      const u = await b.from('obras').update({ nome: 'durante bloqueio' }).eq('id', ID.obra!).select();
+      expect(u.error != null || (u.data ?? []).length === 0).toBe(true);
+    } finally {
+      await mutar(() => useDefinirStatusOrganizacao(), { orgId: orgA.id, status: 'ativa' });
+    }
+    await entrar(EMAIL.ana, orgA, 'owner');
+    const convites = await consultar(() => useConvites());
+    for (const cv of convites) await mutar(() => useRevogarConvite(), cv.id);
+    expect(await consultar(() => useConvites())).toEqual([]);
+    await mutar(() => useRemoverMembro(), ID.vitor!);
+    expect((await consultar(() => useMembros(orgA.id))).map((m) => m.email)).not.toContain(EMAIL.vitor);
+    const v = await clientDe(EMAIL.vitor);
+    expect((await v.from('orcamentos').select('id').eq('id', orcId)).data ?? []).toEqual([]);
   });
 });

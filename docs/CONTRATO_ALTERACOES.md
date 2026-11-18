@@ -197,3 +197,34 @@ Contratos: `docs/ARQUITETURA.md`, `docs/DESIGN.md`, `src/types/*`, `src/lib/calc
      `src/components/orcamento/cronograma.ts` (totais por período, distribuição linear).
 - Impacto: BACKEND-2 (proposta do item 4), REVISOR (registrar em ARQUITETURA §12 a pasta de impressão).
 - Status: aplicado (FRONTEND-2); item 4 proposto.
+
+## 2026-11-18 — TESTES — integração real, RPC atômica de composição própria e correções
+- O quê:
+  1. **Nova RPC `fn_composicao_propria_salvar(p_id uuid, p_cabecalho jsonb, p_itens jsonb default '[]') returns uuid`**
+     (migração `0030_composicao_propria_salvar.sql`, faixa TESTES), atendendo à proposta do FRONTEND-2 (item 4 acima).
+     `p_id = null` cria (exige `p_cabecalho.organizacao_id`); senão atualiza a composição própria `p_id`.
+     `p_cabecalho`: `{codigo, descricao, unidade, grupo?, observacao?, ativo?, organizacao_id?}` (código aparado,
+     unidade em maiúsculas, grupo/observação vazios ⇒ null). `p_itens`: `[{tipo_item, referencia_id | insumo_id |
+     subcomposicao_id, coeficiente}]`, `ordem` = posição; a lista **substitui** os itens. `security invoker` (RLS de
+     `composicoes`/`composicao_itens` vale) + `assert_pode_editar`; tudo numa transação (erro em qualquer item desfaz
+     cabeçalho e itens). Erros: `P0001` (validação, composição não encontrada/invisível), `42501` (SINAPI, sem permissão),
+     `23505` (código duplicado). `execute` só para `authenticated`/`service_role`.
+     Tipo em `src/types/db-orcamento.ts` (`OrcamentoFunctions.fn_composicao_propria_salvar`); `useSalvarComposicaoPropria`
+     passou a usá-la (assinatura do hook inalterada).
+  2. **`supabase/config.toml`**: `[realtime] enabled = false` (o app não usa Realtime e o container falha em hosts sem
+     IPv6, abortando `supabase start`) e seção `[inbucket]` removida (o CLI 3.x a rejeita — virou `[local_smtp]` — e o
+     2.x rejeita `[local_smtp]`; sem a seção, ambos usam os padrões, porta 54324).
+  3. **Front (correções de comportamento, sem mudança de API)**: `authApi.cadastrar` traduz o erro genérico do GoTrue
+     “Database error saving new user” (exceção do `handle_new_user`, ex.: cadastro fechado) para mensagem pt-BR;
+     `AppShell`/`Topbar` ganham modo estreito (< 768 px: sidebar vira gaveta aberta por botão “Abrir menu”, busca rápida
+     oculta, padding menor) — `Topbar` aceita prop opcional `onMenu`; `PageHeader` limita as ações a `max-w-full`
+     (quebram linha em vez de estourar); `OrcamentoBdiPage` compara o formulário campo a campo (preset igual ao gravado
+     não habilita “Salvar”).
+  4. **Testes/infra** (não contratuais): `@electric-sql/pglite` virou devDependency; scripts `test:db`, `test:db:pg`,
+     `test:contrato`, `test:integracao`, `test:e2e`, `test:all`; `scripts/verificar-contrato.mjs` (+ `scripts/contrato/`);
+     `supabase/tests/pg_run.mjs` (mesmas suítes SQL em Postgres real via psql); `orc_run.mjs` passa a aplicar todas as
+     migrações (antes parava em 0029); `vitest.integracao.config.ts` + `src/test/integracao/`; `scripts/e2e/rodar.mjs`;
+     utilitários `src/test/utils.tsx`. Relatório completo em `docs/RELATORIO_TESTES.md`.
+- Por quê: verificação contra Supabase real (PG 15.8 + GoTrue + PostgREST 13 + Storage) e navegador.
+- Impacto: REVISOR — registrar a RPC em ARQUITETURA §7.2 e o modo estreito do layout em DESIGN.md.
+- Status: aplicado (TESTES)

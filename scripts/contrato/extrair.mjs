@@ -221,9 +221,9 @@ export function parseSelect(s) {
     }
     if (parte === '*') return { tipo: 'estrela' };
     if (parte === 'count') return { tipo: 'count' };
-    let col = parte;
+    let col = parte.replace(/::\w+$/, '');
     let alias = null;
-    const ix = col.search(/:(?!:)/);
+    const ix = col.indexOf(':');
     if (ix >= 0) {
       alias = col.slice(0, ix).trim();
       col = col.slice(ix + 1).trim();

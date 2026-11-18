@@ -9,6 +9,8 @@ const traduzir = (msg: string): string => {
   if (/password should be at least/i.test(msg)) return 'A senha precisa ter pelo menos 8 caracteres.';
   if (/rate limit|too many/i.test(msg)) return 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
   if (/signups not allowed|signup.*disabled/i.test(msg)) return 'O cadastro de novas contas está desativado.';
+  // GoTrue mascara a exceção do trigger handle_new_user (cadastro fechado / e-mail não autorizado) como 500 genérico
+  if (/database error saving new user/i.test(msg)) return 'Não foi possível criar a conta: o cadastro está fechado. Solicite um convite ao administrador.';
   if (/same.*password|different from the old/i.test(msg)) return 'A nova senha precisa ser diferente da atual.';
   if (/failed to fetch/i.test(msg)) return 'Sem conexão com o servidor.';
   if (/session.*missing|auth session/i.test(msg)) return 'Link expirado ou inválido. Solicite um novo e-mail.';

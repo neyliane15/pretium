@@ -32,12 +32,14 @@ export function emailDe(nome: string): string {
 }
 
 /** Client independente (sessão própria, sem persistência) — para preparar dados de outro usuário. */
+let clientes = 0;
 export function novoClient(): SupabaseClient<Database> {
-  return createClient<Database>(URL_API, ANON, { auth: { persistSession: false, autoRefreshToken: false } });
+  clientes += 1;
+  return createClient<Database>(URL_API, ANON, { auth: { persistSession: false, autoRefreshToken: false, storageKey: `pretium-teste-${clientes}` } });
 }
 
 export function clientServico(): SupabaseClient<Database> | null {
-  return SERVICE ? createClient<Database>(URL_API, SERVICE, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
+  return SERVICE ? createClient<Database>(URL_API, SERVICE, { auth: { persistSession: false, autoRefreshToken: false, storageKey: 'pretium-teste-servico' } }) : null;
 }
 
 /** Entra com o client singleton (o usado pelos hooks) e atualiza `estado`. */
