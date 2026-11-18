@@ -79,7 +79,7 @@ export function NovoOrcamentoModal({ open, onClose, obraId }: { open: boolean; o
         </Field>
         <Field label="Nome do orçamento" required error={errors.nome?.message}>{(p) => <Input {...p} {...register('nome')} data-autofocus />}</Field>
         <Field label="Data-base de preços" required error={errors.data_base_id?.message} hint="Define UF, mês de referência e regime (desonerado ou não)."
-          labelAside={<Button variant="link" size="sm" onClick={() => setBuscarAberto(true)}>Não achou sua UF ou mês? Buscar na Caixa</Button>}>
+          labelAside={<Button variant="link" size="sm" onClick={() => setBuscarAberto(true)}>Não achou o mês ou estado? Atualizar tabela</Button>}>
           {(p) => (
             <Controller
               control={control}

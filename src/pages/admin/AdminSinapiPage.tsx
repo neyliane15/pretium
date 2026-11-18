@@ -79,11 +79,11 @@ export default function AdminSinapiPage() {
       <Card flush accent>
         <CardHeader
           eyebrow="Referências"
-          title="Datas-base SINAPI"
-          description="Somente datas-base publicadas ficam visíveis para os usuários. Dados de exemplo são marcados como “Exemplo”."
+          title="Tabelas importadas"
+          description="Só as tabelas publicadas aparecem para os usuários."
           actions={
-            <Button variant="primary" size="sm" leftIcon={<Upload />} onClick={() => nav(rotas.adminSinapiImportar)}>
-              Importar planilha
+            <Button variant="ghost" size="sm" leftIcon={<Upload />} onClick={() => nav(rotas.adminSinapiImportar)}>
+              Importação avançada
             </Button>
           }
         />

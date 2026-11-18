@@ -10,11 +10,22 @@ export function SeletorDataBase({ value, onChange, className }: { value: string;
   const { organizacao } = useOrganizacao();
   const datas = useDatasBase();
   useEffect(() => {
-    if (value || !datas.data?.length) return;
+    const lista = datas.data;
+    if (!lista?.length) return;
     const uf = organizacao?.uf_padrao ?? 'RJ';
     const reg = organizacao?.regime_padrao ?? 'nao_desonerado';
-    const d = datas.data.find((x) => x.uf === uf && x.regime === reg && !x.is_demo) ?? datas.data.find((x) => x.uf === uf && x.regime === reg) ?? datas.data[0]!;
-    onChange(d.id);
+    const atual = lista.find((x) => x.id === value);
+    // sem seleção (ou seleção que sumiu): oficial mais recente da UF/regime padrão
+    if (!atual) {
+      const d = lista.find((x) => x.uf === uf && x.regime === reg && !x.is_demo) ?? lista.find((x) => !x.is_demo) ?? lista.find((x) => x.uf === uf && x.regime === reg) ?? lista[0]!;
+      onChange(d.id);
+      return;
+    }
+    // estava em dados de exemplo e chegou tabela oficial (ex.: acabou de importar): troca para a oficial
+    if (atual.is_demo) {
+      const oficial = lista.find((x) => !x.is_demo && x.uf === atual.uf && x.regime === atual.regime) ?? lista.find((x) => !x.is_demo && x.uf === uf && x.regime === reg);
+      if (oficial) onChange(oficial.id);
+    }
   }, [value, datas.data, organizacao, onChange]);
   return (
     <div className={className}>

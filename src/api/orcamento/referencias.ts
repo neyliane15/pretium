@@ -326,3 +326,57 @@ export function useAnaliticasOrcamento(composicaoIds: readonly string[], dataBas
     staleTime: 60_000,
   });
 }
+
+// ─── Listagem completa (navegar pela tabela sem digitar) ──────────────────
+
+export interface ItemListagem {
+  id: string;
+  tipo: 'insumo' | 'composicao';
+  codigo: string;
+  descricao: string;
+  unidade: string;
+  insumo_tipo: InsumoTipo | null;
+  preco: number | null;
+  is_demo: boolean;
+}
+
+/** Página da tabela SINAPI da data-base (insumos ou composições com preço), em ordem alfabética. */
+export function useListarReferencias(dataBaseId: string | null | undefined, tipo: 'insumo' | 'composicao', pagina: number, porPagina = 50) {
+  return useQuery({
+    queryKey: ['ref', 'listagem', dataBaseId ?? '', tipo, pagina, porPagina],
+    enabled: Boolean(dataBaseId),
+    placeholderData: keepPreviousData,
+    queryFn: async (): Promise<{ itens: ItemListagem[]; total: number }> => {
+      const de = (pagina - 1) * porPagina;
+      const ate = de + porPagina - 1;
+      if (tipo === 'insumo') {
+        const r = await supabase
+          .from('insumos')
+          .select('id, codigo, descricao, unidade, tipo, is_demo, insumo_precos!inner(preco)', { count: 'exact' })
+          .eq('insumo_precos.data_base_id', dataBaseId!)
+          .order('descricao')
+          .order('id')
+          .range(de, ate);
+        if (r.error) throw r.error;
+        const itens = (r.data ?? []).map((x) => {
+          const p = x.insumo_precos as unknown as { preco: number }[];
+          return { id: x.id, tipo: 'insumo' as const, codigo: x.codigo, descricao: x.descricao, unidade: x.unidade, insumo_tipo: x.tipo, preco: p[0]?.preco ?? null, is_demo: x.is_demo };
+        });
+        return { itens, total: r.count ?? itens.length };
+      }
+      const r = await supabase
+        .from('composicoes')
+        .select('id, codigo, descricao, unidade, is_demo, composicao_precos!inner(custo)', { count: 'exact' })
+        .eq('composicao_precos.data_base_id', dataBaseId!)
+        .order('descricao')
+        .order('id')
+        .range(de, ate);
+      if (r.error) throw r.error;
+      const itens = (r.data ?? []).map((x) => {
+        const p = x.composicao_precos as unknown as { custo: number }[];
+        return { id: x.id, tipo: 'composicao' as const, codigo: x.codigo, descricao: x.descricao, unidade: x.unidade, insumo_tipo: null, preco: p[0]?.custo ?? null, is_demo: x.is_demo };
+      });
+      return { itens, total: r.count ?? itens.length };
+    },
+  });
+}

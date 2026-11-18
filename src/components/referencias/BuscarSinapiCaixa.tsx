@@ -1,162 +1,34 @@
-import { useEffect, useMemo, useState } from 'react';
-import { CloudDownload, ExternalLink, Upload } from 'lucide-react';
-import { mensagemResposta, useBuscarSinapiCaixa, type RespostaBusca } from '@/api/core/sinapiCaixa';
-import { Alert, Button, Field, Modal, Select } from '@/components/ui';
-import { useAuth } from '@/contexts/AuthContext';
-import { useOrganizacao } from '@/contexts/OrganizacaoContext';
+import { useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { EnviarPacoteSinapiModal } from '@/components/admin/EnviarPacoteSinapiModal';
-import { urlPacoteNacional } from '@/lib/sinapi/nacional';
-import { UFS } from '@/lib/labels';
+import { Button, Modal } from '@/components/ui';
+import { useAuth } from '@/contexts/AuthContext';
 
-const NOMES_UF: Record<string, string> = {
-  AC: 'Acre', AL: 'Alagoas', AM: 'Amazonas', AP: 'Amapá', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo',
-  GO: 'Goiás', MA: 'Maranhão', MG: 'Minas Gerais', MS: 'Mato Grosso do Sul', MT: 'Mato Grosso', PA: 'Pará', PB: 'Paraíba',
-  PE: 'Pernambuco', PI: 'Piauí', PR: 'Paraná', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RO: 'Rondônia', RR: 'Roraima',
-  RS: 'Rio Grande do Sul', SC: 'Santa Catarina', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
-};
-
-/** Últimos 12 meses (o mais recente publicado pela Caixa costuma ser o mês anterior). */
-function mesesRecentes(): { value: string; label: string }[] {
-  const out: { value: string; label: string }[] = [];
-  const d = new Date();
-  for (let i = 1; i <= 12; i++) {
-    const x = new Date(d.getFullYear(), d.getMonth() - i, 1);
-    const mes = x.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-    out.push({ value: `${x.getFullYear()}-${x.getMonth() + 1}`, label: mes.charAt(0).toUpperCase() + mes.slice(1) });
-  }
-  return out;
-}
-
-/** Link direto do pacote: mês escolhido ou, para "mais recente", o mês anterior. */
-function linkDownload(mes: string): string {
-  if (mes !== 'recente') {
-    const [a, m] = mes.split('-').map(Number);
-    return urlPacoteNacional(a!, m!);
-  }
-  const d = new Date();
-  const x = new Date(d.getFullYear(), d.getMonth() - 1, 1);
-  return urlPacoteNacional(x.getFullYear(), x.getMonth() + 1);
-}
-
-/** Modal "Buscar tabela oficial": escolhe UF e mês; o servidor baixa da Caixa e importa os dois regimes. */
-export function BuscarSinapiCaixaModal({ open, onClose, ufInicial }: { open: boolean; onClose: () => void; ufInicial?: string }) {
-  const { organizacao } = useOrganizacao();
+/**
+ * "Atualizar tabela SINAPI": para o admin, os 3 passos (baixar da Caixa → enviar → importar);
+ * para os demais, um aviso curto de que quem atualiza é o administrador.
+ * (A Caixa recusa downloads automáticos de servidor; a rotina diária continua tentando em segundo plano.)
+ */
+export function BuscarSinapiCaixaModal({ open, onClose }: { open: boolean; onClose: () => void; ufInicial?: string }) {
   const { isAdmin } = useAuth();
-  const [manual, setManual] = useState(false);
-  const buscar = useBuscarSinapiCaixa();
-  const [uf, setUf] = useState(ufInicial ?? organizacao?.uf_padrao ?? 'RJ');
-  const [mes, setMes] = useState('recente');
-  const [resposta, setResposta] = useState<RespostaBusca | null>(null);
-  const meses = useMemo(mesesRecentes, []);
-
-  useEffect(() => {
-    if (open) {
-      setResposta(null);
-      buscar.reset();
-      setUf(ufInicial ?? organizacao?.uf_padrao ?? 'RJ');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  const enviar = async () => {
-    setResposta(null);
-    const [a, m] = mes === 'recente' ? [undefined, undefined] : mes.split('-').map(Number);
-    try {
-      setResposta(await buscar.mutateAsync({ uf, ano: a, mes: m }));
-    } catch {
-      /* erro exibido abaixo */
-    }
-  };
-
-  const msg = resposta ? mensagemResposta(resposta) : null;
-  const concluiu = resposta?.status === 'concluida' || resposta?.status === 'ja_disponivel';
-
+  if (isAdmin) return <EnviarPacoteSinapiModal open={open} onClose={onClose} />;
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      dismissable={!buscar.isPending}
-      title="Buscar tabela SINAPI oficial"
-      description="O Pretium baixa a planilha mensal publicada pela Caixa e importa a UF escolhida, desonerada e não desonerada."
-      footer={
-        concluiu ? (
-          <Button variant="primary" onClick={onClose}>Concluir</Button>
-        ) : (
-          <>
-            <Button onClick={onClose} disabled={buscar.isPending}>Cancelar</Button>
-            <Button variant="primary" leftIcon={<CloudDownload />} loading={buscar.isPending} onClick={() => void enviar()}>
-              {buscar.isPending ? 'Buscando…' : 'Buscar na Caixa'}
-            </Button>
-          </>
-        )
-      }
-    >
-      <div className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Estado (UF)">
-            {(p) => (
-              <Select {...p} value={uf} disabled={buscar.isPending} onChange={(e) => setUf(e.target.value)} options={UFS.map((u) => ({ value: u, label: `${u} — ${NOMES_UF[u]}` }))} />
-            )}
-          </Field>
-          <Field label="Mês de referência">
-            {(p) => (
-              <Select {...p} value={mes} disabled={buscar.isPending} onChange={(e) => setMes(e.target.value)} options={[{ value: 'recente', label: 'Mais recente publicado' }, ...meses]} />
-            )}
-          </Field>
-        </div>
-
-        {buscar.isPending && (
-          <Alert variant="info" title="Baixando e importando…">
-            A planilha nacional da Caixa é grande: o processo costuma levar de 1 a 3 minutos. Pode continuar usando o sistema em outra aba; não feche esta janela.
-          </Alert>
-        )}
-        {buscar.isError && <Alert variant="danger" title="Não foi possível buscar">{buscar.error.message}</Alert>}
-        {msg && <Alert variant={msg.tipo} title={msg.titulo}>{msg.texto}</Alert>}
-        {resposta?.status === 'indisponivel' && (
-          <div className="rounded-lg border border-border bg-surface-2 p-4 text-sm">
-            <p className="font-medium text-fg">Plano B: baixar pelo seu navegador</p>
-            <p className="mt-1 text-fg-muted">
-              A Caixa recusa downloads automáticos, mas libera o arquivo para quem acessa pelo navegador.
-              {isAdmin ? ' Baixe o pacote e envie aqui — o Pretium importa as UFs que você escolher.' : ' Peça ao administrador do sistema para baixar e enviar o pacote.'}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <a
-                className="inline-flex h-control-sm items-center gap-1.5 rounded border border-border-strong bg-surface px-3 text-sm font-medium text-fg hover:bg-surface-2"
-                href={linkDownload(mes)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <ExternalLink className="h-3.5 w-3.5" /> Baixar pacote da Caixa
-              </a>
-              {isAdmin && (
-                <Button size="sm" variant="primary" leftIcon={<Upload />} onClick={() => setManual(true)}>
-                  Enviar o arquivo baixado
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
-        <EnviarPacoteSinapiModal open={manual} onClose={() => setManual(false)} />
-        {!buscar.isPending && !resposta && (
-          <p className="text-sm text-fg-muted">
-            Os preços vêm direto do arquivo oficial da Caixa (sinapi-relatorios-mensais) e ficam disponíveis para todos os escritórios. Depois de
-            importada, a tabela da UF é atualizada automaticamente todo mês.
-          </p>
-        )}
-      </div>
+    <Modal open={open} onClose={onClose} size="sm" title="Atualizar tabela SINAPI" footer={<Button variant="primary" onClick={onClose}>Entendi</Button>}>
+      <p className="text-base text-fg">Quem atualiza a tabela SINAPI é o administrador do sistema.</p>
+      <p className="mt-2 text-sm text-fg-muted">Peça a ele para importar o mês e o estado que você precisa. Depois disso, a tabela aparece aqui automaticamente.</p>
     </Modal>
   );
 }
 
-/** Botão que abre o modal. */
-export function BotaoBuscarSinapiCaixa({ ufInicial, size, variant }: { ufInicial?: string; size?: 'sm' | 'md'; variant?: 'primary' | 'secondary' }) {
+/** Botão que abre o fluxo. */
+export function BotaoBuscarSinapiCaixa({ size, variant }: { ufInicial?: string; size?: 'sm' | 'md'; variant?: 'primary' | 'secondary' }) {
   const [aberto, setAberto] = useState(false);
   return (
     <>
-      <Button size={size} variant={variant} leftIcon={<CloudDownload />} onClick={() => setAberto(true)}>
-        Buscar tabela oficial
+      <Button size={size} variant={variant} leftIcon={<RefreshCw />} onClick={() => setAberto(true)}>
+        Atualizar tabela SINAPI
       </Button>
-      <BuscarSinapiCaixaModal open={aberto} onClose={() => setAberto(false)} ufInicial={ufInicial} />
+      <BuscarSinapiCaixaModal open={aberto} onClose={() => setAberto(false)} />
     </>
   );
 }

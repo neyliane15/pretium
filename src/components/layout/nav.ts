@@ -59,7 +59,7 @@ export const NAV: NavGroup[] = [
       { to: rotas.adminUsuarios, label: 'Usuários', icon: Users, termos: 'aprovar bloquear' },
       { to: rotas.adminOrganizacoes, label: 'Organizações', icon: Building, termos: 'escritorios empresas bloquear' },
       { to: rotas.adminSinapi, label: 'Tabelas SINAPI', icon: FileSpreadsheet, end: true, termos: 'datas-base' },
-      { to: rotas.adminSinapiImportar, label: 'Importar SINAPI', icon: Upload, termos: 'planilha xlsx csv' },
+      { to: rotas.adminSinapiImportar, label: 'Importação avançada', icon: Upload, termos: 'planilha xlsx csv' },
       { to: rotas.adminAuditoria, label: 'Auditoria', icon: ClipboardList, termos: 'logs' },
       { to: rotas.adminConfiguracoes, label: 'Configurações', icon: SlidersHorizontal, termos: 'cadastro aprovacao aviso admin_emails' },
     ],
