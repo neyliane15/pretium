@@ -1,5 +1,5 @@
-import { Suspense, useState } from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { Suspense, useEffect, useState } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Alert, LoadingBlock } from '@/components/ui';
 import { useAvisoGlobal, useDataBaseMaisRecente } from '@/api/core/configuracoes';
 import { useAuth } from '@/contexts/AuthContext';
@@ -61,8 +61,33 @@ function Faixas() {
   );
 }
 
+const CONSULTA_MOVEL = '(max-width: 767px)';
+
+/** `true` em telas estreitas (< 768 px): a sidebar vira gaveta sobreposta. */
+function useTelaEstreita(): boolean {
+  const [estreita, setEstreita] = useState(() => typeof window !== 'undefined' && Boolean(window.matchMedia?.(CONSULTA_MOVEL).matches));
+  useEffect(() => {
+    const mq = window.matchMedia?.(CONSULTA_MOVEL);
+    if (!mq) return;
+    const fn = (e: MediaQueryListEvent) => setEstreita(e.matches);
+    mq.addEventListener('change', fn);
+    return () => mq.removeEventListener('change', fn);
+  }, []);
+  return estreita;
+}
+
 /** Moldura autenticada: sidebar + topbar + faixas + conteúdo rolável. Dono: FRONTEND-1. */
 export function AppShell() {
+  const estreita = useTelaEstreita();
+  const [menuAberto, setMenuAberto] = useState(false);
+  const { pathname } = useLocation();
+  useEffect(() => setMenuAberto(false), [pathname, estreita]);
+  useEffect(() => {
+    if (!menuAberto) return;
+    const fn = (e: KeyboardEvent) => e.key === 'Escape' && setMenuAberto(false);
+    window.addEventListener('keydown', fn);
+    return () => window.removeEventListener('keydown', fn);
+  }, [menuAberto]);
   const [recolhida, setRecolhida] = useState(lerRecolhida);
   const alternar = () =>
     setRecolhida((r) => {
@@ -82,12 +107,20 @@ export function AppShell() {
       >
         Pular para o conteúdo
       </a>
-      <Sidebar collapsed={recolhida} onToggle={alternar} />
+      {!estreita && <Sidebar collapsed={recolhida} onToggle={alternar} />}
+      {estreita && menuAberto && (
+        <>
+          <div aria-hidden className="no-print fixed inset-0 z-40 bg-black/40" onClick={() => setMenuAberto(false)} />
+          <div role="dialog" aria-modal="true" aria-label="Menu de navegação" className="no-print fixed inset-y-0 left-0 z-50 shadow-xl">
+            <Sidebar />
+          </div>
+        </>
+      )}
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar />
+        <Topbar onMenu={estreita ? () => setMenuAberto(true) : undefined} />
         <main id="conteudo" tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto focus:outline-none">
           <Faixas />
-          <div className="mx-auto w-full max-w-[1600px] px-6 py-5">
+          <div className="mx-auto w-full max-w-[1600px] px-3 py-4 sm:px-6 sm:py-5">
             <Suspense fallback={<LoadingBlock />}>
               <Outlet />
             </Suspense>

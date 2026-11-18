@@ -8,7 +8,7 @@
  *
  * Para cada arquivo orc_*.test.sql cria um banco novo e aplica:
  *   supabase/tests/core/core_stub_supabase.sql (stub do Supabase mantido pelo B1)
- *   → supabase/migrations/0001..0029 (todas presentes)
+ *   → supabase/migrations/0001..N (todas, inclusive as correções 0030+)
  *   → supabase/.temp/orc_stub_lacunas.sql (opcional, não versionado: objetos do B1 ainda ausentes)
  *   → supabase/seed.sql (se PRETIUM_SEED != '0')
  *   → supabase/tests/core/core_helpers.sql (schema tests.*) → orc_helpers.sql → teste
@@ -63,7 +63,7 @@ try {
   console.warn(`aviso: não foi possível importar src/lib/calc.ts (${e.message}); paridade TS desativada`);
 }
 
-const migracoes = readdirSync(dirMig).filter((f) => /^\d{4}_.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 29).sort();
+const migracoes = readdirSync(dirMig).filter((f) => /^\d{4}_.+\.sql$/.test(f)).sort();
 const filtro = process.env.PRETIUM_TEST ?? '';
 const testes = readdirSync(aqui).filter((f) => /^orc_.+\.test\.sql$/.test(f) && f.includes(filtro)).sort();
 const ler = (p) => readFileSync(p, 'utf8');

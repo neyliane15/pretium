@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Check, ChevronsUpDown, LogOut, Monitor, Moon, ShieldCheck, Sun, UserRound } from 'lucide-react';
+import { Building2, Check, ChevronsUpDown, LogOut, Menu, Monitor, Moon, ShieldCheck, Sun, UserRound } from 'lucide-react';
 import { Avatar, Badge, Combobox, DropdownMenu, IconButton, Kbd, useToast, type DropdownMenuEntry } from '@/components/ui';
 import { useArquivoUrl } from '@/api/core/arquivos';
 import { salvarTemaPerfil } from '@/api/core/perfil';
@@ -211,8 +211,11 @@ function MenuUsuario() {
   );
 }
 
-/** Barra superior: organização, busca rápida, tema, usuário. Dono: FRONTEND-1. */
-export function Topbar() {
+/**
+ * Barra superior: organização, busca rápida, tema, usuário. Dono: FRONTEND-1.
+ * `onMenu` (telas estreitas): mostra o botão que abre a navegação lateral como gaveta.
+ */
+export function Topbar({ onMenu }: { onMenu?: () => void } = {}) {
   const { temaEfetivo, setTema } = useTheme();
   const { user } = useAuth();
   const alternar = () => {
@@ -221,14 +224,16 @@ export function Topbar() {
     if (user) void salvarTemaPerfil(user.id, t);
   };
   return (
-    <header className="no-print relative flex h-topbar shrink-0 items-center gap-3 border-b border-border bg-surface px-3">
-      <div className="flex min-w-0 shrink-0 items-center">
+    <header className="no-print relative flex h-topbar shrink-0 items-center gap-2 border-b border-border bg-surface px-2 sm:gap-3 sm:px-3">
+      {onMenu && <IconButton label="Abrir menu" icon={<Menu />} onClick={onMenu} className="shrink-0" />}
+      <div className="flex min-w-0 shrink items-center">
         <SeletorOrganizacao />
       </div>
-      <span aria-hidden className="h-5 w-px bg-border" />
-      <div className="flex min-w-0 flex-1 items-center">
+      <span aria-hidden className="hidden h-5 w-px bg-border sm:block" />
+      <div className="hidden min-w-0 flex-1 items-center sm:flex">
         <BuscaRapida />
       </div>
+      <div className="flex-1 sm:hidden" />
       <div className="flex shrink-0 items-center gap-0.5">
         <IconButton label={temaEfetivo === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'} icon={temaEfetivo === 'dark' ? <Sun /> : <Moon />} onClick={alternar} />
         <span aria-hidden className="mx-1 h-5 w-px bg-border" />

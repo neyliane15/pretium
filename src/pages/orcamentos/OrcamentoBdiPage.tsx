@@ -90,7 +90,9 @@ export default function OrcamentoBdiPage() {
   }
   const situacao = bdi !== null ? situacaoBdiTcu(bdi, tipo) : null;
   const I = tributosBdi(form);
-  const alterado = JSON.stringify(form) !== JSON.stringify(params(sel)) || nome !== sel.nome;
+  // comparação campo a campo (presetTcu() monta as chaves em outra ordem: JSON.stringify acusava alteração falsa)
+  const original = params(sel);
+  const alterado = (Object.keys(original) as (keyof BdiParametros)[]).some((k) => form[k] !== original[k]) || nome !== sel.nome;
   const set = (k: keyof BdiParametros, v: number | null) => setForm({ ...form, [k]: v ?? 0 });
 
   const onSalvar = async () => {

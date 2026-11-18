@@ -14,3 +14,4 @@ coverage
 supabase/.temp
 supabase/.branches
 npm-debug.log*
+test-results
