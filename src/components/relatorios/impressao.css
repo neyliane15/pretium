@@ -58,5 +58,4 @@
   .rel-tela { padding: 0; background: #fff; }
   .rel-folha { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
   .rel-folha.paisagem { width: auto; min-height: 0; }
-  .rel-rodape { position: running(rodape); }
 }
