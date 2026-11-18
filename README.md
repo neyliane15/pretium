@@ -57,7 +57,10 @@ aprovar em **Administração → Usuários**.
 
 E-mails de autenticação locais (recuperação de senha) aparecem no Inbucket/Mailpit:
 http://localhost:54324. Sem acesso ao registro ECR da AWS, use as imagens do Docker Hub:
-`SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io supabase start`.
+`SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io supabase start`. Use **a mesma versão do CLI** para
+`start` e `db reset`: um `db reset` feito por um CLI mais novo recria o banco com uma imagem do
+Postgres cujo schema de Storage não combina com o container de Storage já em execução (o upload
+de arquivos passa a falhar).
 
 ## Antes de ir para produção (obrigatório)
 

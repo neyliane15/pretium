@@ -233,3 +233,22 @@ npm run test:integracao -- --reset                             # db reset + flux
 npm run test:e2e                                               # Playwright (Chromium)
 npm run test:all                                               # tudo
 ```
+
+## 7. Rodada da revisão final (18/11/2026)
+
+Com `PRETIUM_INTEGRACAO=obrigatorio PRETIUM_E2E=obrigatorio PRETIUM_PG=obrigatorio` (nada pulado),
+stack local com Supabase CLI 2.54.11 (Postgres 15.8.1.085, GoTrue 2.180, PostgREST 13.0.7, Storage 1.28.2):
+
+| Suíte | Resultado |
+|---|---|
+| `typecheck`, `lint`, `build` | sem erros |
+| vitest (unitários + componentes) | **97/97** (6 novos: `buscarTodas` e regressões do `NumberInput`) |
+| SQL no PGlite (núcleo 0001–0009, núcleo completo, orçamento) | **167/167**, **167/167**, **249/249** (com a nova migração 0031) |
+| SQL no Postgres 15.8 real | **416/416** |
+| Contrato frontend × banco | OK |
+| Integração (Supabase real) | **42/42** (novo: orçamento com 5.120 itens > `max_rows`) |
+| E2E | 87 visitas, 2 interações, **0 problemas**; a edição de quantidade agora é estrita (uma tentativa, exatamente um PATCH) |
+
+A instabilidade do §5 era um **bug real**: o blur disparado pela troca de foco após o Enter reenviava o
+valor anterior da quantidade. Correção e demais achados em [`ENTREGA.md`](ENTREGA.md) §9.
+O risco de truncamento por `max_rows` (§5) foi corrigido com paginação por `range` (`buscarTodas`).
