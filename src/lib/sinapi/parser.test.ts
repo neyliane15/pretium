@@ -160,7 +160,7 @@ describe('formato consolidado (ISD/CSD) e filtro de UF', () => {
 
 describe('CSV e lotes', () => {
   it('detecta ; e aspas', () => {
-    expect(parseCsv('﻿CODIGO;DESCRICAO;PRECO\r\n370;"AREIA; MEDIA ""LAVADA""";123,45\n')).toEqual([
+    expect(parseCsv('\uFEFFCODIGO;DESCRICAO;PRECO\r\n370;"AREIA; MEDIA ""LAVADA""";123,45\n')).toEqual([
       ['CODIGO', 'DESCRICAO', 'PRECO'],
       ['370', 'AREIA; MEDIA "LAVADA"', '123,45'],
     ]);

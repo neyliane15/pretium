@@ -12,8 +12,8 @@ export interface Aba {
 
 function decodificar(buf: ArrayBuffer): string {
   const utf8 = new TextDecoder('utf-8').decode(buf);
-  // arquivos da Caixa costumam vir em Windows-1252: muitos "�" ⇒ tenta latin1
-  const ruins = (utf8.match(/�/g) ?? []).length;
+  // arquivos da Caixa costumam vir em Windows-1252: muitos "\uFFFD" ⇒ tenta latin1
+  const ruins = (utf8.match(/\uFFFD/g) ?? []).length;
   if (ruins > 3) return new TextDecoder('windows-1252').decode(buf);
   return utf8;
 }

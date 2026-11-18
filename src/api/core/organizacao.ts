@@ -116,13 +116,15 @@ export function useRevogarConvite() {
   });
 }
 
+export type ConvitePendente = ConviteDetalhe & { token: string };
+
 /** Convites pendentes para o e-mail do usuário logado, com o nome da organização. */
 export function useMeusConvites() {
   const { user, profile } = useAuth();
   return useQuery({
     queryKey: qkCore.meusConvites(user?.id),
     enabled: Boolean(user && profile?.status === 'active'),
-    queryFn: async (): Promise<ConviteDetalhe[]> => {
+    queryFn: async (): Promise<ConvitePendente[]> => {
       const convites: Convite[] = ok(await supabase.rpc('meus_convites'));
       const detalhes = await Promise.all(
         convites.map(async (c) => {
@@ -130,7 +132,7 @@ export function useMeusConvites() {
           return r.data?.[0] ? { ...r.data[0], token: c.token } : null;
         }),
       );
-      return detalhes.filter((d): d is ConviteDetalhe & { token: string } => d !== null);
+      return detalhes.filter((d): d is ConvitePendente => d !== null);
     },
   });
 }

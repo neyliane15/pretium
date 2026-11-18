@@ -8,7 +8,7 @@ import { qkOrc } from './keys';
 import { invalidarOrcamento } from './orcamentos';
 import { ok, okVoid, useOrgId } from './util';
 import type {
-  Cronograma, CronogramaPeriodicidade, DashboardResumo, Honorario, HonorarioDisciplina, Json, Medicao, MedicaoItem,
+  Cronograma, CronogramaPeriodicidade, DashboardResumo, EncargosSociais, Honorario, HonorarioDisciplina, Json, Medicao, MedicaoItem,
   MedicaoStatus, OrcamentoEquipe, OrcamentoEquipeMembro, TablesInsert, TablesUpdate,
 } from '@/types/database';
 
@@ -251,7 +251,7 @@ export function useEncargosDoOrcamento(encargosId: string | null | undefined) {
   return useQuery({
     queryKey: ['ref', 'encargos', 'cab', encargosId ?? ''],
     enabled: Boolean(encargosId),
-    queryFn: async () => ok(await supabase.from('encargos_sociais').select('*').eq('id', encargosId!).single()),
+    queryFn: async (): Promise<EncargosSociais> => ok(await supabase.from('encargos_sociais').select('*').eq('id', encargosId!).single()) as EncargosSociais,
   });
 }
 

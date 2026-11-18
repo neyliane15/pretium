@@ -1,6 +1,6 @@
 /** Storage: URLs assinadas e upload de imagens (logos, avatares). Dono: FRONTEND-1. */
 import { useQuery } from '@tanstack/react-query';
-import { BUCKETS, supabase } from '@/lib/supabase';
+import { supabase, type BUCKETS } from '@/lib/supabase';
 import { qkCore } from './keys';
 import { extensaoImagem, urlAssinada, validarImagem } from './util';
 

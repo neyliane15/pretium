@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, LogIn, Mail } from 'lucide-react';
+import { LogIn, Mail } from 'lucide-react';
 import { Alert, Button, Field, Input } from '@/components/ui';
 import { authApi } from '@/api/core/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { loginSchema, type LoginForm } from '@/schemas/core';
 import { rotas } from '@/routes';
 import { AuthLayout } from './AuthLayout';
+import { SenhaInput } from './SenhaInput';
 
 /** Login por e-mail e senha. Dono: FRONTEND-1. */
 export default function LoginPage() {
@@ -16,7 +17,6 @@ export default function LoginPage() {
   const nav = useNavigate();
   const loc = useLocation();
   const [erro, setErro] = useState<string | null>(null);
-  const [ver, setVer] = useState(false);
   const estado = loc.state as { from?: string; aviso?: string } | null;
   const destino = estado?.from ?? rotas.dashboard;
   const {
@@ -67,19 +67,7 @@ export default function LoginPage() {
             </Link>
           }
         >
-          {(p) => (
-            <div className="relative">
-              <Input {...p} {...register('senha')} type={ver ? 'text' : 'password'} autoComplete="current-password" className="pr-8" />
-              <button
-                type="button"
-                onClick={() => setVer((v) => !v)}
-                aria-label={ver ? 'Ocultar senha' : 'Mostrar senha'}
-                className="absolute inset-y-0 right-1 my-auto flex h-6 w-6 items-center justify-center rounded-sm text-fg-subtle hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {ver ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-              </button>
-            </div>
-          )}
+          {(p) => <SenhaInput {...p} {...register('senha')} autoComplete="current-password" />}
         </Field>
         <Button type="submit" variant="primary" size="lg" block loading={isSubmitting} leftIcon={<LogIn />} className="mt-1">
           Entrar

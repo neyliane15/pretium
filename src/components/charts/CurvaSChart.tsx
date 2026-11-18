@@ -29,7 +29,7 @@ export function CurvaSChart({ dados, altura = 280 }: { dados: readonly PontoCurv
           <ComposedChart data={dados as PontoCurvaS[]} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} barCategoryGap="18%">
             <CartesianGrid stroke={t.grid} vertical={false} />
             <XAxis dataKey="rotulo" {...eixo(t)} minTickGap={8} />
-            <YAxis {...eixo(t)} domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} width={40} />
+            <YAxis {...eixo(t)} domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} allowDataOverflow tickFormatter={(v: number) => `${Math.round(v)}%`} width={40} />
             <Tooltip
               cursor={{ fill: t.grid, opacity: 0.6 }}
               content={({ active, payload }) => {

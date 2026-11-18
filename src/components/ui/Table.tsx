@@ -13,6 +13,8 @@ export interface TableProps extends HTMLAttributes<HTMLTableElement> {
   gridLines?: boolean;
   /** classes do container com rolagem */
   containerClassName?: string;
+  /** dentro de `Card flush`: sem borda/raio próprios e 1ª/última coluna alinhadas ao padding do card (16px) */
+  inset?: boolean;
 }
 
 /**
@@ -20,11 +22,11 @@ export interface TableProps extends HTMLAttributes<HTMLTableElement> {
  * Envolve em container com overflow-x e borda.
  */
 export const Table = forwardRef<HTMLTableElement, TableProps>(function Table(
-  { density = 'default', striped, stickyHeader, gridLines, className, containerClassName, ...rest },
+  { density = 'default', striped, stickyHeader, gridLines, inset, className, containerClassName, ...rest },
   ref,
 ) {
   return (
-    <div className={cn('relative w-full overflow-auto rounded border border-border bg-surface', containerClassName)}>
+    <div className={cn('relative w-full overflow-auto rounded border border-border bg-surface', inset && 'rounded-none border-0', containerClassName)}>
       <table
         ref={ref}
         data-density={density}
@@ -37,6 +39,7 @@ export const Table = forwardRef<HTMLTableElement, TableProps>(function Table(
           striped && '[&_tbody_tr:nth-child(even)]:bg-surface-2/60',
           stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10',
           gridLines && '[&_td+td]:border-l [&_th+th]:border-l',
+          inset && '[&_td:first-child]:pl-4 [&_th:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:last-child]:pr-4',
           className,
         )}
         {...rest}

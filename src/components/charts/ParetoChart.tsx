@@ -40,7 +40,7 @@ export function ParetoChart({ dados, altura = 300, maxBarras = 60 }: { dados: re
           <ComposedChart data={pts} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} barCategoryGap={2}>
             <CartesianGrid stroke={t.grid} vertical={false} />
             <XAxis dataKey="posicao" {...eixo(t)} interval="preserveStartEnd" minTickGap={12} />
-            <YAxis {...eixo(t)} domain={[0, 100]} ticks={[0, 20, 40, 60, 80, 95, 100]} tickFormatter={(v: number) => `${v}%`} width={40} />
+            <YAxis {...eixo(t)} domain={[0, 100]} ticks={[0, 20, 40, 60, 80, 95, 100]} allowDataOverflow tickFormatter={(v: number) => `${Math.round(v)}%`} width={40} />
             <ReferenceLine y={80} stroke={t.subtle} strokeDasharray="3 3" />
             <ReferenceLine y={95} stroke={t.subtle} strokeDasharray="3 3" />
             <Tooltip

@@ -236,7 +236,7 @@
     background-image: repeating-linear-gradient(
       -45deg,
       rgb(var(--c-accent)) 0 8px,
-      rgb(var(--c-graphite)) 8px 16px
+      rgb(var(--c-accent-fg)) 8px 16px
     );
   }
 }

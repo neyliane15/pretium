@@ -27,7 +27,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       <select
         ref={ref}
         aria-invalid={invalid || rest['aria-invalid'] || undefined}
-        className={cn(controlBase, controlSizes[size], 'cursor-pointer appearance-none pr-7', className)}
+        // <select> casa com :read-only no Chromium; restaura o fundo/anel de controle editável
+        className={cn(controlBase, controlSizes[size], 'cursor-pointer appearance-none pr-7 read-only:bg-surface read-only:focus:ring-2', 'disabled:bg-sunken', className)}
         {...rest}
       >
         {placeholder !== undefined && <option value="">{placeholder}</option>}

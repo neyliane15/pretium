@@ -44,7 +44,7 @@ export function normalizarCodigo(v: Celula): string | null {
 export function parseNumero(v: Celula): number | null {
   if (v === null || v === undefined || typeof v === 'boolean' || v instanceof Date) return null;
   if (typeof v === 'number') return Number.isFinite(v) ? v : null;
-  let s = v.replace(/R\$|%|\s| /g, '').trim();
+  let s = v.replace(/R\$|%|\s|\u00a0/g, '').trim();
   if (!s || s === '-') return null;
   const virgula = s.lastIndexOf(',');
   const ponto = s.lastIndexOf('.');
@@ -435,7 +435,7 @@ export function extrair(tipo: TipoPlanilhaSinapi, linhas: Matriz, cab: number, m
 
 /** CSV com detecção de separador (; , ou tab) e aspas duplas (RFC 4180). */
 export function parseCsv(conteudo: string): string[][] {
-  const txt = conteudo.replace(/^﻿/, '');
+  const txt = conteudo.replace(/^\uFEFF/, '');
   const amostra = txt.slice(0, 5000).split(/\r?\n/).slice(0, 20).join('\n');
   const contar = (c: string) => amostra.split(c).length - 1;
   const sep = [';', '\t', ','].reduce((a, b) => (contar(b) > contar(a) ? b : a), ';');

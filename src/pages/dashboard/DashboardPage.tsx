@@ -1,14 +1,15 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Building2, Calculator, CheckCircle2, Plus, Ruler } from 'lucide-react';
+import { useObras } from '@/api/core/obras';
 import { useDashboard } from '@/api/orcamento/analises';
 import { useOrcamentos } from '@/api/orcamento/orcamentos';
 import { BarrasHorizontais } from '@/components/charts';
-import { BarraPercentual, DataBaseTag, ErroCarregamento, Rotulo, StatusOrcamento } from '@/components/orcamento/comum';
+import { BarraPercentual, DataBaseTag, ErroCarregamento, Rotulo, StatusObra, StatusOrcamento } from '@/components/orcamento/comum';
 import {
-  Alert, Button, Card, CardHeader, EmptyState, PageHeader, Skeleton, Stat, TBody, THead, Table, TableMessage, Td, Th, Tr,
+  Button, Card, CardHeader, EmptyState, PageHeader, Skeleton, Stat, TBody, THead, Table, TableMessage, Td, Th, Tr,
 } from '@/components/ui';
 import { useOrganizacao } from '@/contexts/OrganizacaoContext';
-import { formatBRL, formatMesAno, formatPercent, formatRelativo } from '@/lib/format';
+import { formatBRL, formatMesAno, formatNumero, formatPercent, formatRelativo } from '@/lib/format';
 import { LABEL_OBRA_STATUS, LABEL_ORCAMENTO_STATUS } from '@/lib/labels';
 import { rotas } from '@/routes';
 import type { ObraStatus, OrcamentoStatus } from '@/types/database';
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const dash = useDashboard();
   const orcs = useOrcamentos();
+  const obras = useObras();
   const d = dash.data;
 
   const obrasTotal = d ? Object.values(d.obras_por_status).reduce((s, n) => s + (n ?? 0), 0) : 0;
@@ -50,11 +52,6 @@ export default function DashboardPage() {
 
       {dash.isError && <ErroCarregamento erro={dash.error} onRetry={() => void dash.refetch()} />}
 
-      {d?.data_base_mais_recente?.is_demo && (
-        <Alert variant="demo" className="mb-4" title="Base de preços de exemplo">
-          A data-base mais recente contém dados de demonstração, não oficiais. Peça ao administrador para importar a tabela SINAPI-RJ oficial.
-        </Alert>
-      )}
 
       <section aria-label="Indicadores" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {dash.isLoading || !d ? (
@@ -75,6 +72,7 @@ export default function DashboardPage() {
       </section>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="flex min-w-0 flex-col gap-4">
         <Card flush accent>
           <CardHeader
             eyebrow="Atividade"
@@ -108,6 +106,30 @@ export default function DashboardPage() {
             </TBody>
           </Table>
         </Card>
+
+        <Card flush>
+          <CardHeader eyebrow="Carteira" title="Obras recentes" actions={<Link to={rotas.obras} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">Ver todas <ArrowRight className="h-3 w-3" /></Link>} />
+          <Table className="[&_td]:px-3 [&_th]:px-3" containerClassName="rounded-none border-0">
+            <THead>
+              <Tr><Th width={100}>Código</Th><Th>Obra</Th><Th>Local</Th><Th>Status</Th><Th numeric>Área (m²)</Th><Th numeric>Atualizada</Th></Tr>
+            </THead>
+            <TBody>
+              {obras.isLoading && <TableMessage colSpan={6}>Carregando…</TableMessage>}
+              {obras.data?.length === 0 && <TableMessage colSpan={6}>Nenhuma obra cadastrada.</TableMessage>}
+              {(obras.data ?? []).slice(0, 6).map((o) => (
+                <Tr key={o.id} interactive onClick={() => navigate(rotas.obra(o.id))}>
+                  <Td mono muted>{o.codigo ?? '—'}</Td>
+                  <Td className="font-medium">{o.nome}</Td>
+                  <Td muted>{o.municipio ?? '—'}</Td>
+                  <Td><StatusObra status={o.status} /></Td>
+                  <Td numeric>{formatNumero(o.area_construida_m2)}</Td>
+                  <Td numeric muted className="text-xs">{formatRelativo(o.updated_at)}</Td>
+                </Tr>
+              ))}
+            </TBody>
+          </Table>
+        </Card>
+        </div>
 
         <div className="flex flex-col gap-4">
           <Card>

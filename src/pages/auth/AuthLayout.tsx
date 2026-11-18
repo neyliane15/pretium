@@ -39,7 +39,7 @@ function Carimbo() {
 export function AuthLayout({ titulo, subtitulo, children, rodape, eyebrow, largura = 380 }: AuthLayoutProps) {
   return (
     <div className="flex min-h-screen bg-bg">
-      <aside className="relative hidden w-[44%] max-w-[620px] flex-col justify-between overflow-hidden bg-sidebar p-10 text-sidebar-fg lg:flex">
+      <aside className="relative hidden w-[44%] max-w-[620px] flex-col justify-between overflow-hidden border-r border-sidebar-border bg-sidebar p-10 text-sidebar-fg lg:flex">
         <div
           aria-hidden
           className="absolute inset-0 opacity-60"
@@ -50,7 +50,7 @@ export function AuthLayout({ titulo, subtitulo, children, rodape, eyebrow, largu
           }}
         />
         {/* cota técnica decorativa */}
-        <svg aria-hidden className="absolute right-10 top-1/2 h-56 w-56 -translate-y-1/2 text-sidebar-border" viewBox="0 0 200 200" fill="none">
+        <svg aria-hidden className="absolute right-10 top-24 h-44 w-44 text-sidebar-border" viewBox="0 0 200 200" fill="none">
           <rect x="30" y="30" width="140" height="140" stroke="currentColor" />
           <rect x="60" y="60" width="80" height="80" stroke="rgb(var(--c-brand))" strokeOpacity=".9" />
           <path d="M30 185H170M30 180V190M170 180V190" stroke="currentColor" />
@@ -78,8 +78,7 @@ export function AuthLayout({ titulo, subtitulo, children, rodape, eyebrow, largu
             <Logo height={30} />
           </div>
           <div className="corner-marks corner-marks-brand relative rounded border border-border-strong bg-surface p-6 shadow-md">
-            <span aria-hidden className="absolute left-0 top-0 h-[2px] w-10 bg-brand" />
-            {eyebrow && <div className="mb-1 font-mono text-2xs uppercase tracking-[0.12em] text-fg-subtle">{eyebrow}</div>}
+                        {eyebrow && <div className="mb-1 font-mono text-2xs uppercase tracking-[0.12em] text-fg-subtle">{eyebrow}</div>}
             <h1 className="font-display text-xl font-semibold">{titulo}</h1>
             {subtitulo && <p className="mt-1 text-sm text-fg-muted">{subtitulo}</p>}
             <div className="mt-5">{children}</div>

@@ -156,14 +156,14 @@ async function renumerar(orcamentoId: string) {
 export function useCriarEtapa(orcamentoId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (a: { nome: string; parentId: string | null; ordem: number }) => {
+    mutationFn: async (a: { nome: string; parentId: string | null; ordem: number }): Promise<OrcamentoEtapa> => {
       const r = ok(
         await supabase
           .from('orcamento_etapas')
           .insert({ orcamento_id: orcamentoId, nome: a.nome, parent_id: a.parentId, ordem: a.ordem })
           .select()
           .single(),
-      );
+      ) as OrcamentoEtapa;
       await renumerar(orcamentoId);
       return r;
     },
