@@ -98,9 +98,8 @@ begin
   if tg_op = 'INSERT' and v_enviado is not null and v_enviado is distinct from v_org then
     raise exception 'A organização informada difere da organização do registro pai.' using errcode = 'P0001';
   end if;
-  if tg_op = 'UPDATE' and v_enviado is distinct from (to_jsonb(old) ->> 'organizacao_id')::uuid
-     and v_enviado is distinct from v_org then
-    raise exception 'A organização informada difere da organização do registro pai.' using errcode = 'P0001';
+  if tg_op = 'UPDATE' and v_org is distinct from (to_jsonb(old) ->> 'organizacao_id')::uuid then
+    raise exception 'Não é possível mover o registro para outra organização.' using errcode = 'P0001';
   end if;
   new := jsonb_populate_record(new, jsonb_build_object('organizacao_id', v_org));
   return new;

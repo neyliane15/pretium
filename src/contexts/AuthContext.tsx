@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { Profile } from '@/types/database';
 
 /**
@@ -31,11 +31,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       return;
     }
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
-    setProfile(data ?? null);
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+    // mantém o perfil anterior em falha transitória de rede
+    if (!error) setProfile(data ?? null);
   }, []);
 
   useEffect(() => {
+    // sem Supabase configurado não há sessão possível (o App mostra a tela de configuração)
+    if (!isSupabaseConfigured) {
+      setLoading(false);
+      return;
+    }
     let ativo = true;
     supabase.auth
       .getSession()

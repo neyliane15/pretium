@@ -1,17 +1,92 @@
-import { Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
-import { LoadingBlock } from '@/components/ui';
+import { Suspense, useState } from 'react';
+import { Link, Outlet } from 'react-router-dom';
+import { Alert, LoadingBlock } from '@/components/ui';
+import { useAvisoGlobal, useDataBaseMaisRecente } from '@/api/core/configuracoes';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrganizacao } from '@/contexts/OrganizacaoContext';
+import { formatMesAno } from '@/lib/format';
+import { rotas } from '@/routes';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 
-/** Moldura autenticada: sidebar fixa + topbar + conteúdo rolável. Dono: FRONTEND-1. */
+const KEY = 'pretium.sidebar';
+
+function lerRecolhida(): boolean {
+  try {
+    return localStorage.getItem(KEY) === 'recolhida';
+  } catch {
+    return false;
+  }
+}
+
+/** Faixas globais: aviso do admin, organização bloqueada e dados de exemplo. */
+function Faixas() {
+  const aviso = useAvisoGlobal();
+  const { data: db } = useDataBaseMaisRecente();
+  const { organizacao } = useOrganizacao();
+  const { isAdmin } = useAuth();
+  const [avisoFechado, setAvisoFechado] = useState<string | null>(null);
+
+  return (
+    <>
+      {db?.is_demo && (
+        <div className="no-print flex items-center gap-3 border-b border-accent/40 bg-accent-soft px-4 py-1 text-xs text-fg">
+          <span aria-hidden className="hazard-stripe h-3 w-6 shrink-0 rounded-xs" />
+          <span className="font-mono text-2xs font-semibold uppercase tracking-[0.1em]">Ambiente com dados de exemplo</span>
+          <span className="truncate text-fg-muted">
+            A data-base {db.uf} {formatMesAno(db.ano, db.mes)} é demonstrativa — os preços não são oficiais.
+          </span>
+          {isAdmin && (
+            <Link to={rotas.adminSinapiImportar} className="ml-auto shrink-0 font-medium text-primary hover:underline">
+              Importar tabela oficial
+            </Link>
+          )}
+        </div>
+      )}
+      {(aviso && avisoFechado !== aviso) || organizacao?.status === 'bloqueada' ? (
+        <div className="no-print flex flex-col gap-2 px-6 pt-4">
+          {aviso && avisoFechado !== aviso && (
+            <Alert variant="info" title="Aviso" onDismiss={() => setAvisoFechado(aviso)}>
+              {aviso}
+            </Alert>
+          )}
+          {organizacao?.status === 'bloqueada' && (
+            <Alert variant="danger" title="Organização bloqueada">
+              Esta organização está bloqueada pelo administrador: os dados estão disponíveis somente para leitura.
+            </Alert>
+          )}
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+/** Moldura autenticada: sidebar + topbar + faixas + conteúdo rolável. Dono: FRONTEND-1. */
 export function AppShell() {
+  const [recolhida, setRecolhida] = useState(lerRecolhida);
+  const alternar = () =>
+    setRecolhida((r) => {
+      try {
+        localStorage.setItem(KEY, r ? 'expandida' : 'recolhida');
+      } catch {
+        /* ignore */
+      }
+      return !r;
+    });
+
   return (
     <div className="flex h-screen overflow-hidden bg-bg">
-      <Sidebar />
+      <a
+        href="#conteudo"
+        className="sr-only z-[80] rounded bg-surface px-3 py-2 text-base font-medium text-fg shadow-md focus:not-sr-only focus:absolute focus:left-3 focus:top-3"
+      >
+        Pular para o conteúdo
+      </a>
+      <Sidebar collapsed={recolhida} onToggle={alternar} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />
-        <main id="conteudo" className="min-h-0 flex-1 overflow-y-auto">
+        <main id="conteudo" tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto focus:outline-none">
+          <Faixas />
           <div className="mx-auto w-full max-w-[1600px] px-6 py-5">
             <Suspense fallback={<LoadingBlock />}>
               <Outlet />

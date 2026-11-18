@@ -3,6 +3,8 @@ import { createBrowserRouter, Navigate, RouterProvider, type RouteObject } from 
 import { AppShell } from '@/components/layout/AppShell';
 import { RequireActive, RequireAdmin, RequireAuth, RequireOrg } from '@/components/auth/Guards';
 import { LoadingBlock } from '@/components/ui';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { ConfiguracaoNecessaria } from '@/pages/_shared/ConfiguracaoNecessaria';
 
 /**
  * ROTEAMENTO COMPLETO DO PRETIUM — declarado pelo agente de projeto.
@@ -173,6 +175,7 @@ const router = createBrowserRouter(routes, {
 });
 
 export default function App() {
+  if (!isSupabaseConfigured) return <ConfiguracaoNecessaria />;
   return (
     <Suspense fallback={<LoadingBlock className="min-h-screen" label="Carregando Pretium…" />}>
       <RouterProvider router={router} future={{ v7_startTransition: true }} />
